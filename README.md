@@ -69,4 +69,47 @@ This project demonstrates a **scalable architecture**, **clean code practices**,
 | Deployment | Vercel |
 
 ---
+## 📚 Feature Overview
+### 🌍 Public Experience
+| Feature               | Description                              |
+| --------------------- | ---------------------------------------- |
+| Landing Page          | High-converting public landing page      |
+| Course Catalogue      | Browse all available courses             |
+| Course Detail Pages   | View course overview and full curriculum |
+| Pre-Purchase Browsing | Explore courses before authentication    |
+### 🔐 Authentication & Authorization
+| Feature                        | Description                              |
+| ------------------------------ | ---------------------------------------- |
+| Mandatory Auth Before Purchase | Users must authenticate before checkout  |
+| GitHub OAuth                   | One-click GitHub login                   |
+| Email OTP Authentication       | Passwordless login via one-time passcode |
+| Unified User Roles             | Single auth flow for creators & students |
+### 💳 Payments & Enrollment
+| Feature                   | Description                               |
+| ------------------------- | ----------------------------------------- |
+| Stripe Checkout           | Secure Stripe payment flow                |
+| Instant Enrollment        | Access unlocked immediately after payment |
+| Production-Ready Payments | Handles real users & real transactions    |
+### 🧑‍💼 Creator / Admin Dashboard
+| Feature           | Description                           |
+| ----------------- | ------------------------------------- |
+| Admin Dashboard   | Dedicated creator control panel       |
+| Visual Analytics  | Track course performance & engagement |
+| Course Management | Create, edit, and manage courses      |
+### 📝 Course Authoring & Editing
+| Feature                 | Description                            |
+| ----------------------- | -------------------------------------- |
+| Custom Rich Text Editor | Built from scratch for lesson content  |
+| Course Editing Tabs     | Separate info & structure editing      |
+| Course Metadata Editing | Update title, description, and details |
+| Chapter Management      | Create and manage chapters             |
+| Lesson Management       | Create and manage lessons              |
 
+### 🛡️ Security & Protection
+| Feature                  | Description                       |
+| ------------------------ | --------------------------------- |
+| Arcjet Security          | Platform-wide security layer      |
+| Bot Protection           | Detects and blocks malicious bots |
+| XSS Protection           | Prevents cross-site scripting     |
+| SQL Injection Protection | Guards against injection attacks  |
+| Rate & Weight Limiting   | Keeps app fast and resilient      |
