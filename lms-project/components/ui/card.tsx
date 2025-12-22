@@ -32,7 +32,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("leading-none font-semibold", className)}
+      className={cn("leading-none font-semibold text-3xl", className)}
       {...props}
     />
   )
@@ -42,7 +42,17 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-black font-regular text-md", className)}
+      {...props}
+    />
+  )
+}
+
+function CardDescriptionWhite({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-[#e0ffe9] font-regular text-md", className)}
       {...props}
     />
   )
@@ -81,12 +91,55 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+function CardBlack({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-black"
+      className={cn(
+        "bg-black text-[#09e1ac] flex flex-col gap-6 rounded-sm border px-6 py-6 shadow-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardTurquoise({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-turquoise"
+      className={cn(
+        "bg-[#09e1ac] text-[#000000] flex flex-col gap-6 rounded-sm px-6 py-6 shadow-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardBlue({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-blue"
+      className={cn(
+        "bg-[#01309b] text-[#e0ffe9] flex flex-col gap-6 rounded-sm px-6 py-5 shadow-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
 export {
   Card,
+  CardBlack,
   CardHeader,
+  CardTurquoise,
   CardFooter,
   CardTitle,
   CardAction,
+  CardBlue,
   CardDescription,
+  CardDescriptionWhite,
   CardContent,
 }
