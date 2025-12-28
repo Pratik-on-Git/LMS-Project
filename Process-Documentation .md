@@ -60,10 +60,6 @@ export default function Demo() {
 pnpm dlx shadcn@latest add alert-dialog avatar badge breadcrumb button card chart checkbox collapsible dialog drawer dropdown-menu form input-otp input label progress select separator sheet sidebar skeleton sonner table tabs textarea toggle-group toggle tooltip
 ```
 
-<<<<<<< HEAD
-## Login Page Creation
-Created a simple login page inside the `(auth)/login/page.tsx` file with the following content:
-=======
 ## Login Page UI Creation
 Created a simple login page inside the `(auth)/login/page.tsx` file with the following content:
 ```tsx
@@ -220,4 +216,3 @@ export function ModeToggle() {
   )
 }
 ```
->>>>>>> upload-local
