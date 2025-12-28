@@ -1,10 +1,12 @@
 import Image from "next/image";
 import { MotionMain, MotionButton } from "@/components/ui/animated";
 import { CardDescriptionWhite, CardTitle, CardBlue } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
   
 export default function Home() {
   return (
-    <MotionMain className="flex min-h-screen flex-col items-center justify-center p-24 bg--light-turquoise">
+    <MotionMain className="flex min-h-screen flex-col items-center justify-center p-24">
+      <ThemeToggle />
       <CardBlue className="flex flex-col items-center justify-center">
         <Image src="/favicon.png" alt="Neo LMS logo" width={50} height={50} priority/>
         <div className="flex flex-col gap-1 text-center">
