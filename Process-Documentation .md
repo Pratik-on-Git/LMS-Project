@@ -60,7 +60,7 @@ export default function Demo() {
 pnpm dlx shadcn@latest add alert-dialog avatar badge breadcrumb button card chart checkbox collapsible dialog drawer dropdown-menu form input-otp input label progress select separator sheet sidebar skeleton sonner table tabs textarea toggle-group toggle tooltip
 ```
 
-## Login Page UI Creation
+## 🖼️ Login Page UI Creation
 Created a simple login page inside the `(auth)/login/page.tsx` file with the following content:
 ```tsx
 import { Button } from "@/components/ui/button";
@@ -102,7 +102,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     )
 }
 ```
-### Dark Theme Addition
+### 🕶️ Dark Theme Addition
 To add dark theme support to the application, we made the following changes: 
 1. Open Shadcn UI's website and navigate to the "Docs" section.
 2. Locate the "Dark Theme" documentation page. Open Next.js & Copy the provided code snippet for dark theme support. Create a new file named `theme-provider.tsx` inside the `components/ui` folder and paste the copied code into this file.
@@ -245,7 +245,7 @@ export default function Home() {
 ```
 Now you should see a toggle button at the top right corner of the home page. You can click on it to switch between light and dark themes.
 
-### Final Button Component (Variant) Code After Modifications
+### 🌟 Final Button Component (Variant) Code After Modifications
 ```tsx
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
