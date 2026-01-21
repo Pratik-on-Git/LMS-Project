@@ -30,7 +30,7 @@ export default function LoginPage() {
                         <Label htmlFor="email">Email</Label>
                         <Input type="email" placeholder="your-email@example.com" id="email"/>
                     </div>
-                    <Button className="w-full">Continue with Email</Button>
+                    <Button variant="blue" className="w-full">Continue with Email</Button>
                 </div>
             </CardContent>
         </Card>
