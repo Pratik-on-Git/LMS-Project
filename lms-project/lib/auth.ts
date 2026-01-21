@@ -1,14 +1,20 @@
+import "server-only";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./db";
 import { env } from "./env";
 import { emailOTP } from "better-auth/plugins";
-import { sendEmail, emailTemplates } from "./nodemailer"; // Ensure this file exists and exports the required functions
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: false,
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
+  },
   socialProviders: {
     github: {
       clientId: env.GITHUB_CLIENT_ID,
@@ -17,17 +23,28 @@ export const auth = betterAuth({
   },
   plugins: [
     emailOTP({
-      async sendVerificationOTP({ email, otp }) {
-        const template = emailTemplates.otp(otp);
-        const result = await sendEmail(email, template);
+      async sendVerificationOTP({ email, otp, type }) {
+        try {
+          // Lazy-load mailer only on server
+          const { sendEmail, emailTemplates } = await import("./nodemailer");
+          const template = emailTemplates.otp(otp);
+          const result = await sendEmail(email, template);
 
-        if (!result.success) {
-          console.error("Failed to send OTP email:", result.error);
-          throw new Error("Failed to send verification email");
+          if (!result.success) {
+            console.error("Failed to send OTP email:", result.error);
+            throw new Error("Failed to send verification email");
+          }
+
+          console.log(`✅ OTP sent successfully to ${email} for ${type}`);
+        } catch (error) {
+          console.error("Error in sendVerificationOTP:", error);
+          throw error;
         }
-
-        console.log(`OTP sent to ${email}`);
       },
+      sendVerificationOnSignUp: false,
+      otpLength: 6,
+      expiresIn: 600, // 10 minutes
     }),
   ],
+  trustedOrigins: ["http://localhost:3000"],
 });
