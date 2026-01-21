@@ -10,16 +10,22 @@ import { toast } from "sonner";
 export default function Home() {
   const { data: session} = authClient.useSession() 
   const router = useRouter();
+  
   async function signOut() {
     await authClient.signOut({
-  fetchOptions: {
-    onSuccess: () => {
-      router.push("/login"); // redirect to login page
-      toast.success("Successfully logged out.");
-    },
-  },
-});
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/login"); // redirect to login page
+          toast.success("Successfully logged out.");
+        },
+      },
+    });
   }
+  
+  function handleLogin() {
+    router.push("/login"); // redirect to login page
+  }
+  
   return (
     <MotionMain className="flex min-h-screen flex-col items-center justify-center p-24">
       <ThemeToggle />
@@ -31,7 +37,7 @@ export default function Home() {
       ) : (
         <>
           <p>Please log in to continue.</p>
-          <Button>Login</Button>
+          <Button onClick={handleLogin}>Login</Button>
         </>
       )}
     </MotionMain>

@@ -3,11 +3,11 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./db";
 import { env } from "./env";
 import { emailOTP } from "better-auth/plugins";
-import { resend } from "./resend";
+import { sendEmail, emailTemplates } from "./nodemailer"; // Ensure this file exists and exports the required functions
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "postgresql", // or "mysql", "postgresql", ...etc
+    provider: "postgresql",
   }),
   socialProviders: {
     github: {
@@ -18,13 +18,15 @@ export const auth = betterAuth({
   plugins: [
     emailOTP({
       async sendVerificationOTP({ email, otp }) {
-        // Implement your email sending logic here
-        await resend.emails.send({
-          from: "Neo LMS <onboarding@resend.dev>",
-          to: [email],
-          subject: "Neo LMS: Here's Your OTP Code to Log In",
-          html: `<p>Your OTP code is: <strong>${otp}</strong></p>`,
-        });
+        const template = emailTemplates.otp(otp);
+        const result = await sendEmail(email, template);
+
+        if (!result.success) {
+          console.error("Failed to send OTP email:", result.error);
+          throw new Error("Failed to send verification email");
+        }
+
+        console.log(`OTP sent to ${email}`);
       },
     }),
   ],
