@@ -12,6 +12,7 @@ const envSchema = z.object({
   EMAIL_USER: z.string().email(),
   EMAIL_PASSWORD: z.string().min(1),
   EMAIL_FROM: z.string().min(1),
+  ARCJET_KEY: z.string().min(1),
 });
 
 export const env = envSchema.parse(process.env);
