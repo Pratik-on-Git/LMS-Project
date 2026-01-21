@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 // Email templates
 export const emailTemplates = {
   otp: (otp: string) => ({
-    subject: 'Your OTP Code - Neo LMS',
+    subject: 'Your OTP Code - NeoLMS',
     text: `Your OTP code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.`,
     html: `
       <!DOCTYPE html>
@@ -39,7 +39,7 @@ export const emailTemplates = {
                   <tr>
                     <td style="padding: 30px; background-color: #f8f9fa; border-top: 1px solid #e9ecef; border-radius: 0 0 8px 8px;">
                       <p style="color: #999999; font-size: 12px; text-align: center; margin: 0;">
-                        © 2025 Neo LMS - Learning Management System
+                        © 2026 NeoLMS - Learning Management System
                       </p>
                     </td>
                   </tr>
@@ -57,10 +57,6 @@ export const emailTemplates = {
 const createTransporter = () => {
   // Verify environment variables
   if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-    console.error('❌ Missing email configuration:');
-    console.error('EMAIL_HOST:', process.env.EMAIL_HOST ? '✓' : '✗');
-    console.error('EMAIL_USER:', process.env.EMAIL_USER ? '✓' : '✗');
-    console.error('EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '✓' : '✗');
     throw new Error('Email configuration is missing in environment variables');
   }
 
@@ -77,13 +73,6 @@ const createTransporter = () => {
     },
   };
 
-  console.log('📧 Email Configuration:', {
-    host: config.host,
-    port: config.port,
-    secure: config.secure,
-    user: config.auth.user,
-  });
-
   return nodemailer.createTransport(config);
 };
 
@@ -93,43 +82,25 @@ export const sendEmail = async (
   template: { subject: string; text: string; html: string }
 ) => {
   try {
-    console.log(`📤 Attempting to send email to: ${to}`);
-    
     const transporter = createTransporter();
 
     // Verify transporter configuration
-    console.log('🔍 Verifying email transporter...');
     await transporter.verify();
-    console.log('✅ Email transporter verified successfully');
 
     // Send email
-    console.log('📨 Sending email...');
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || `"Neo LMS" <${process.env.EMAIL_USER}>`,
+      from: process.env.EMAIL_FROM || `"NeoLMS" <${process.env.EMAIL_USER}>`,
       to,
       subject: template.subject,
       text: template.text,
       html: template.html,
     });
-
-    console.log('✅ Email sent successfully!');
-    console.log('Message ID:', info.messageId);
-    console.log('Response:', info.response);
     
     return { 
       success: true, 
       messageId: info.messageId,
-      response: info.response 
     };
   } catch (error) {
-    console.error('❌ Failed to send email:');
-    console.error('Error details:', error);
-    
-    if (error instanceof Error) {
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
-    
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 

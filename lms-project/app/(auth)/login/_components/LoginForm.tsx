@@ -10,7 +10,6 @@ import { Loader, Loader2, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { SiGithub as GithubIcon } from 'react-icons/si';
-import { SiGoogle } from 'react-icons/si';
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -29,7 +28,7 @@ export function LoginForm() {
                 callbackURL: "/",
                 fetchOptions: {
                     onSuccess: () => { toast.success("Successfully logged in with GitHub!") },
-                    onError: (error) => { toast.error("Something went wrong during GitHub login.") }
+                    onError: () => { toast.error("Something went wrong during GitHub login.") }
                 },
             });
         });
@@ -42,17 +41,18 @@ export function LoginForm() {
         }
 
         startEmailTransition(async () => {
-            await authClient.emailOtp.sendVerificationOtp({
+            const { error } = await authClient.emailOtp.sendVerificationOtp({
                 email: email,
-                type: 'sign-in',
-                fetchOptions: {
-                    onSuccess: () => { 
-                        toast.success("OTP sent to your email!"); 
-                        router.push(`/verify-request?email=${email}`); 
-                    },
-                    onError: () => { toast.error("Failed to send OTP. Please try again.") }
-                },
+                type: "sign-in",
             });
+
+            if (error) {
+                toast.error(error.message || "Failed to send OTP");
+                return;
+            }
+
+            toast.success("OTP sent to your email!");
+            router.push(`/verify-request?email=${encodeURIComponent(email)}`);
         });
     }
 
@@ -64,8 +64,15 @@ export function LoginForm() {
             return;
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+
         startPasswordTransition(async () => {
-            const { error } = await authClient.signIn.email({
+            await authClient.signIn.email({
                 email: email,
                 password: password,
                 fetchOptions: {
@@ -85,14 +92,10 @@ export function LoginForm() {
         <Card>
             <CardHeader>
                 <CardTitle className="text-xl">Welcome Back!</CardTitle>
-                <CardDescription>Please Log In to Your Account</CardDescription>
+                <CardDescription className="text-sm">Please Log In to Your Account</CardDescription>
             </CardHeader>
 
             <CardContent className="flex flex-col gap-4">
-                <Button variant="google-outline" className="w-full">
-                    <SiGoogle className="size-4" />
-                    Log In With Google
-                </Button>
                 <Button
                     onClick={signInWithGithub}
                     variant="github"
@@ -186,7 +189,7 @@ export function LoginForm() {
                 </Tabs>
 
                 <p className="mt-4 text-center text-sm text-muted-foreground">
-                    Dont have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link href="/signup" className="text-primary hover:underline">
                         Sign up
                     </Link>

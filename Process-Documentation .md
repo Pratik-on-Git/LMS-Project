@@ -224,9 +224,9 @@ export default function Home() {
     <MotionMain className="flex min-h-screen flex-col items-center justify-center p-24">
       <ThemeToggle />
       <CardBlue className="flex flex-col items-center justify-center">
-        <Image src="/favicon.png" alt="Neo LMS logo" width={50} height={50} priority/>
+        <Image src="/favicon.png" alt="NeoLMS logo" width={50} height={50} priority/>
         <div className="flex flex-col gap-1 text-center">
-          <CardTitle className="font--font-space-grotesk">Welcome to Neo LMS</CardTitle>
+          <CardTitle className="font--font-space-grotesk">Welcome to NeoLMS</CardTitle>
           <CardDescriptionWhite>
             Your learning management system at your fingertips.
           </CardDescriptionWhite>

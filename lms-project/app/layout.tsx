@@ -17,10 +17,10 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Neo LMS",
+  title: "NeoLMS",
   description: "A Learning Management System for Modern Education",
   icons: {
-    icon: '/favicon-black.png',
+    icon: '/favicon.png',
   },
 };
 

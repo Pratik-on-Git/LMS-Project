@@ -29,6 +29,13 @@ export function SignUpForm() {
             return;
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+
         if (formData.password.length < 8) {
             toast.error("Password must be at least 8 characters long");
             return;
@@ -37,36 +44,37 @@ export function SignUpForm() {
         startTransition(async () => {
             try {
                 // Sign up with email and password
-                const { data, error } = await authClient.signUp.email({
+                const signUpResult = await authClient.signUp.email({
                     email: formData.email,
                     password: formData.password,
                     name: `${formData.firstName} ${formData.lastName}`,
                 });
 
-                if (error) {
-                    toast.error(error.message || "Failed to create account");
+                if (signUpResult.error) {
+                    toast.error(signUpResult.error.message || "Failed to create account");
                     return;
                 }
 
                 toast.success("Account created successfully!");
-                
+
                 // Send OTP for verification
                 const otpResult = await authClient.emailOtp.sendVerificationOtp({
                     email: formData.email,
-                    type: 'sign-in',
+                    type: "sign-in",
                 });
 
                 if (otpResult.error) {
-                    toast.error("Account created but failed to send OTP. Please login.");
+                    toast.error("Account created but failed to send OTP. Please try logging in.");
                     router.push("/login");
                     return;
                 }
 
                 toast.success("OTP sent to your email!");
-                router.push(`/verify-request?email=${formData.email}`);
                 
-            } catch (error) {
-                console.error("Sign up error:", error);
+                // Redirect to OTP verification page
+                router.push(`/verify-request?email=${encodeURIComponent(formData.email)}`);
+                
+            } catch {
                 toast.error("An error occurred during sign up");
             }
         });
@@ -76,7 +84,7 @@ export function SignUpForm() {
         <Card>
             <CardHeader>
                 <CardTitle className="text-xl">Create an Account</CardTitle>
-                <CardDescription>Sign up to get started with Neo LMS</CardDescription>
+                <CardDescription>Sign up to get started with NeoLMS</CardDescription>
             </CardHeader>
 
             <CardContent>
@@ -142,7 +150,7 @@ export function SignUpForm() {
                         </p>
                     </div>
 
-                    <Button type="submit" variant="blue" className="w-full" disabled={isPending}>
+                    <Button variant="blue" type="submit" className="w-full" disabled={isPending}>
                         {isPending ? (
                             <>
                                 <Loader2 className="size-4 animate-spin" />

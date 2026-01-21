@@ -23,22 +23,14 @@ export const auth = betterAuth({
   },
   plugins: [
     emailOTP({
-      async sendVerificationOTP({ email, otp, type }) {
-        try {
-          // Lazy-load mailer only on server
-          const { sendEmail, emailTemplates } = await import("./nodemailer");
-          const template = emailTemplates.otp(otp);
-          const result = await sendEmail(email, template);
+      async sendVerificationOTP({ email, otp }) {
+        // Lazy-load mailer only on server
+        const { sendEmail, emailTemplates } = await import("./nodemailer");
+        const template = emailTemplates.otp(otp);
+        const result = await sendEmail(email, template);
 
-          if (!result.success) {
-            console.error("Failed to send OTP email:", result.error);
-            throw new Error("Failed to send verification email");
-          }
-
-          console.log(`✅ OTP sent successfully to ${email} for ${type}`);
-        } catch (error) {
-          console.error("Error in sendVerificationOTP:", error);
-          throw error;
+        if (!result.success) {
+          throw new Error("Failed to send verification email");
         }
       },
       sendVerificationOnSignUp: false,
