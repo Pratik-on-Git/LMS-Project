@@ -2,10 +2,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 import { SiGithub as GithubIcon } from 'react-icons/si';
 import { SiGoogle } from 'react-icons/si'
+import { toast } from "sonner";
 
 export default function LoginPage() {
+    async function signInWithGithub() {
+        await authClient.signIn.social({
+            provider: "github",
+            callbackURL: "/",
+            fetchOptions: { 
+                onSuccess: () => { toast.success("Successfully logged in with GitHub!") },
+                onError: (error) => { toast.error(error.error.message) } 
+            },  
+        });
+    }
     return(
         <Card>
             <CardHeader>
@@ -18,7 +30,7 @@ export default function LoginPage() {
                     <SiGoogle className="size-4"/>
                     Log In With Google
                 </Button>
-                <Button variant="github" className="w-full">
+                <Button onClick={signInWithGithub} variant="github" className="w-full">
                     <GithubIcon className="size-4"/>
                     Log In With Github
                 </Button>
