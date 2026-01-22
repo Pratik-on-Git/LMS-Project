@@ -10,9 +10,6 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        github: "bg-[#24292f] text-white hover:bg-[#16181b]",
-        google: "bg-transparent text-[#4285F4] border border-[#4285F4] hover:bg-[#4285F4]/10",
-        "google-outline": "bg-gradient-to-r from-[#EA4335] via-[#FBBC05] via-[#34A853] to-[#4285F4] text-white hover:opacity-95",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
@@ -22,7 +19,7 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
-        blue: "bg-[#0D0099] text-white hover:bg-[#0015FF]",
+        github: "bg-[#24292F] text-white hover:bg-[#24292F]/90",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -51,27 +48,6 @@ function Button({
     asChild?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
-
-  const isGradientOutline = variant === "google" 
-
-  if (isGradientOutline) {
-    const gradientClass =
-      variant === "google"
-        ? "bg-gradient-to-r from-[#EA4335] via-[#FBBC05] via-[#34A853] to-[#4285F4]"
-        : "bg-gradient-to-r from-[#1877F2] to-[#166fe5]"
-
-    return (
-      <div className={cn(gradientClass, "rounded-md p-[1px] inline-block")}> 
-        <Comp
-          data-slot="button"
-          data-variant={"outline"}
-          data-size={size}
-          className={cn(buttonVariants({ variant: "outline", size, className }), "rounded-[calc(0.5rem-1px)] bg-background")}
-          {...props}
-        />
-      </div>
-    )
-  }
 
   return (
     <Comp

@@ -144,7 +144,7 @@ export function LoginForm() {
                             </div>
                             <Button 
                                 type="submit" 
-                                variant="blue" 
+                                variant="default" 
                                 className="w-full" 
                                 disabled={passwordPending}>
                                 {passwordPending ? (
@@ -171,7 +171,7 @@ export function LoginForm() {
                                 required />
                         </div>
                         <Button 
-                            variant="blue" 
+                            variant="default" 
                             className="w-full" 
                             onClick={signInWithEmail} 
                             disabled={emailPending}>

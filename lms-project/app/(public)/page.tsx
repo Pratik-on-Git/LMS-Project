@@ -1,13 +1,11 @@
 "use client";
 import { MotionMain } from "@/components/ui/animated";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContentNoPadding, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface featureProps {
     title: string;
@@ -78,9 +76,9 @@ export default function Home() {
                             <CardHeader>
                                 <div className="text-4xl mb-4">{feature.icon}</div>
                                 <CardTitle className="">{feature.title}</CardTitle>
-                                <CardContent>
+                                <CardContentNoPadding>
                                     <p className="text-muted-foreground px-0">{feature.description}</p>
-                                </CardContent>
+                                </CardContentNoPadding>
                             </CardHeader>
                         </Card>
                     ))}

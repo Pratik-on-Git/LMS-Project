@@ -5,7 +5,7 @@ import Image from "next/image";
 import Logo from "@/public/favicon.png";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { authClient } from "@/lib/auth-client";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { UserDropdown } from "./UserDropdown";
 
 const navigationItems = [
@@ -42,18 +42,16 @@ export function Navbar() {
                             <UserDropdown name={session.user.name || ""} email={session.user.email || ""} image={session.user.image || ""} />
                         ) : (
                             <>
-                                <Link
-                                    href="/login"
-                                    className={buttonVariants({variant: "secondary"})}
-                                >
-                                    Login
-                                </Link>
-                                <Link
-                                    href="/login"
-                                    className={buttonVariants()}
-                                >
-                                    Get Started
-                                </Link>
+                                <Button variant="secondary" asChild>
+                                    <Link href="/login">
+                                        Login
+                                    </Link>
+                                </Button>
+                                <Button asChild>
+                                    <Link href="/login">
+                                        Get Started
+                                    </Link>
+                                </Button>
                             </>
                         )}
                     </div>

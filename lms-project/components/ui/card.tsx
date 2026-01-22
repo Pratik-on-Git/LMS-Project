@@ -7,7 +7,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-sm border py-6 shadow-sm",
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
         className
       )}
       {...props}
@@ -42,17 +42,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn(" font-regular text-md", className)}
-      {...props}
-    />
-  )
-}
-
-function CardDescriptionWhite({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-description"
-      className={cn("text-[#e0ffe9] font-regular text-md", className)}
+      className={cn("text-muted-foreground text-sm", className)}
       {...props}
     />
   )
@@ -75,7 +65,17 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("", className)}
+      className={cn("px-6", className)}
+      {...props}
+    />
+  )
+}
+
+function CardContentNoPadding({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-content"
+      className={cn("px-0", className)}
       {...props}
     />
   )
@@ -91,55 +91,13 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardBlack({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-black"
-      className={cn(
-        "bg-black text-[#09e1ac] flex flex-col gap-6 rounded-sm border px-6 py-6 shadow-sm",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-function CardTurquoise({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-turquoise"
-      className={cn(
-        "bg-[#09e1ac] text-[#000000] flex flex-col gap-6 rounded-sm px-6 py-6 shadow-sm",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-function CardBlue({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-blue"
-      className={cn(
-        "bg-[#01309b] text-[#e0ffe9] flex flex-col gap-6 rounded-sm px-6 py-5 shadow-sm",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
 export {
   Card,
-  CardBlack,
   CardHeader,
-  CardTurquoise,
   CardFooter,
   CardTitle,
   CardAction,
-  CardBlue,
   CardDescription,
-  CardDescriptionWhite,
   CardContent,
+  CardContentNoPadding
 }
