@@ -43,17 +43,6 @@ export default function Home() {
     const { data: session } = authClient.useSession()
     const router = useRouter();
 
-    async function signOut() {
-        await authClient.signOut({
-            fetchOptions: {
-                onSuccess: () => {
-                    router.push("/login"); // redirect to login page
-                    toast.success("Successfully logged out.");
-                },
-            },
-        });
-    }
-
     function handleLogin() {
         router.push("/login"); // redirect to login page
     }
