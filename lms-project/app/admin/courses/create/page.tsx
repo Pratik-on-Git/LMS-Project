@@ -4,12 +4,14 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type Resolver } from "react-hook-form";
-import { CourseFormData, courseSchema } from "@/lib/zodSchemas";
-import { ArrowLeft, SparkleIcon } from "lucide-react";
+import { courseCategories, CourseFormData, courseLevels, courseSchema, courseStatuses } from "@/lib/zodSchemas";
+import { ArrowLeft, PlusIcon, SparkleIcon } from "lucide-react";
 import Link from "next/link";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import slugify from "slugify";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function CourseCreationPage() {
 
@@ -21,7 +23,7 @@ export default function CourseCreationPage() {
             fileKey: "",
             price: 0,
             duration: 0,
-            category: "",
+            category: "IT & Software",
             smallDescription: "",
             slug: "",
             level: "Beginner",
@@ -83,16 +85,155 @@ export default function CourseCreationPage() {
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
-                                    )} 
+                                    )}
                                 />
-                                <Button type="button" className="w-fit" onClick={()=>{
+                                <Button type="button" className="w-fit" onClick={() => {
                                     const titleValue = form.getValues("title")
                                     const slug = slugify(titleValue, { lower: true, strict: true });
                                     form.setValue("slug", slug, { shouldValidate: true })
                                 }}>
-                                    Generate Slug <SparkleIcon className="ml-1" size={16}/>
+                                    Generate Slug <SparkleIcon className="ml-1" size={16} />
                                 </Button>
                             </div>
+
+                            <FormField
+                                control={form.control}
+                                name="smallDescription"
+                                render={({ field }) => (
+                                    <FormItem className="w-full">
+                                        <FormLabel>Add a Small Description</FormLabel>
+                                        <FormControl>
+                                            <Textarea className="min-h-[80px]" placeholder="Small Description" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Add Course Details</FormLabel>
+                                        <FormControl>
+                                            <Textarea className="min-h-[150px]" placeholder="Description" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+
+                            <FormField
+                                control={form.control}
+                                name="fileKey"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Thumbnail Image</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Thumbnail Image URL" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="category"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Add Category</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="Select a Category" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {courseCategories.map((category) => (
+                                                        <SelectItem key={category} value={category}>
+                                                            {category}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                <FormField
+                                    control={form.control}
+                                    name="level"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Add Level</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="Select a Level" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {courseLevels.map((level) => (
+                                                        <SelectItem key={level} value={level}>
+                                                            {level}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                <FormField
+                                    control={form.control}
+                                    name="duration"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Duration (hours)</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Duration" type="number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                <FormField
+                                    control={form.control}
+                                    name="price"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Add Price ($)</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Price" type="number" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                            </div>
+                            <FormField
+                                control={form.control}
+                                name="status"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Add Status</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select a Status" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {courseStatuses.map((status) => (
+                                                    <SelectItem key={status} value={status}>
+                                                        {status}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+
+                            <Button>
+                                Create Course <PlusIcon className="ml-1" />
+                            </Button>
                         </form>
                     </Form>
                 </CardContent>
