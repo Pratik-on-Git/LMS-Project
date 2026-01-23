@@ -7,7 +7,7 @@ export default function CoursesPage() {
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-semibold">Your Courses</h1>
 
-                <Link href="/admin/courses/new" className={buttonVariants()}>
+                <Link href="/admin/courses/create" className={buttonVariants()}>
                     Add New Course
                 </Link>
             </div>
