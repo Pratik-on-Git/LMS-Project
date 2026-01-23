@@ -157,7 +157,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <Link href="/" className="hover:none">
+              <Link href="/">
                 <Image src={Logo} alt="Logo" className="size-6" />
                 <span className="text-base font-semibold">NeoLMS</span>
               </Link>
