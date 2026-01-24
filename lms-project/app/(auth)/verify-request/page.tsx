@@ -58,7 +58,7 @@ export default function VerifyRequest() {
                     <p className="text-sm text-muted-foreground">Please enter the 6-digit code sent to your email.</p>
                 </div>
 
-                <Button variant="blue" className="w-full" onClick={verifyOtp} disabled={emailPending || !isOtpComplete}>
+                <Button className="w-full" onClick={verifyOtp} disabled={emailPending || !isOtpComplete}>
                     {emailPending ? (<>
                         <Loader2 className="size-4 animate-spin" />
                         <span>Verifying...</span>
