@@ -92,6 +92,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@tiptap/extension-font-family':
+        specifier: ^3.17.1
+        version: 3.17.1(@tiptap/extension-text-style@3.17.1(@tiptap/core@3.17.0(@tiptap/pm@3.17.0)))
       '@tiptap/extension-placeholder':
         specifier: ^3.17.1
         version: 3.17.1(@tiptap/extensions@3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))(@tiptap/pm@3.17.0))
@@ -99,6 +102,9 @@ importers:
         specifier: ^3.17.0
         version: 3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))
       '@tiptap/extension-typography':
+        specifier: ^3.17.1
+        version: 3.17.1(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))
+      '@tiptap/extension-underline':
         specifier: ^3.17.1
         version: 3.17.1(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))
       '@tiptap/pm':
@@ -1861,6 +1867,11 @@ packages:
       '@tiptap/core': ^3.17.0
       '@tiptap/pm': ^3.17.0
 
+  '@tiptap/extension-font-family@3.17.1':
+    resolution: {integrity: sha512-HQcKdrarMbniRsCamCzy/C+t9RUBdz0V2KEE5iLA8iJta62/ENTE85y5czow9IC+LwMrv40rsivqHp3irraGrA==}
+    peerDependencies:
+      '@tiptap/extension-text-style': ^3.17.1
+
   '@tiptap/extension-gapcursor@3.17.0':
     resolution: {integrity: sha512-d2cfLPCjlOLW9GyqZROEENOdu3W0zd3UaqksN9S4GvTE/NEvGYPxcNReesia70/L9A850zZneIJ/XvgvzLOQAw==}
     peerDependencies:
@@ -1934,6 +1945,11 @@ packages:
     peerDependencies:
       '@tiptap/core': ^3.17.0
 
+  '@tiptap/extension-text-style@3.17.1':
+    resolution: {integrity: sha512-TCMsEU92r/TfZkN8AKo/WIcJ1uNq/5NiZxloq5drF1HXxDDjwliurgwBw3OTGUlKQmer0N9hV0AAePY/G+5Akw==}
+    peerDependencies:
+      '@tiptap/core': ^3.17.1
+
   '@tiptap/extension-text@3.17.0':
     resolution: {integrity: sha512-dqCOW/4W6+f6WTMCfpuCxlrZ8fVu+rVWooBw7Xk/qFLOJVj8M9P4K6BwmXMVFEK47S/q67D4UiTVkWDV9xBdjw==}
     peerDependencies:
@@ -1944,10 +1960,10 @@ packages:
     peerDependencies:
       '@tiptap/core': ^3.17.1
 
-  '@tiptap/extension-underline@3.17.0':
-    resolution: {integrity: sha512-W0+9WtyVmLQwtERULOOmZXFh1Z4d41geN2jzWdnpPt6GQAxz29SO9fF5oWTeLtPkPVGuxXSFOn+ml3vNDw1pGg==}
+  '@tiptap/extension-underline@3.17.1':
+    resolution: {integrity: sha512-6RdBzmkg6DYs0EqPyoqLGkISXzCnPqM/q3A6nh3EmFmORcIDfuNmcidvA6EImebK8KQGmtZKsRhQSnK4CNQ39g==}
     peerDependencies:
-      '@tiptap/core': ^3.17.0
+      '@tiptap/core': ^3.17.1
 
   '@tiptap/extensions@3.17.0':
     resolution: {integrity: sha512-8eiDsQ4gaN/sN1Klg+g3W5gNRHllThCq5/0/YvbmchDImNyzKjxvLhChaan5g8W2N3d4l7NIQSLpzlnCpVPqQA==}
@@ -6107,6 +6123,10 @@ snapshots:
       '@tiptap/pm': 3.17.0
     optional: true
 
+  '@tiptap/extension-font-family@3.17.1(@tiptap/extension-text-style@3.17.1(@tiptap/core@3.17.0(@tiptap/pm@3.17.0)))':
+    dependencies:
+      '@tiptap/extension-text-style': 3.17.1(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))
+
   '@tiptap/extension-gapcursor@3.17.0(@tiptap/extensions@3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))(@tiptap/pm@3.17.0))':
     dependencies:
       '@tiptap/extensions': 3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))(@tiptap/pm@3.17.0)
@@ -6167,6 +6187,10 @@ snapshots:
     dependencies:
       '@tiptap/core': 3.17.0(@tiptap/pm@3.17.0)
 
+  '@tiptap/extension-text-style@3.17.1(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))':
+    dependencies:
+      '@tiptap/core': 3.17.0(@tiptap/pm@3.17.0)
+
   '@tiptap/extension-text@3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))':
     dependencies:
       '@tiptap/core': 3.17.0(@tiptap/pm@3.17.0)
@@ -6175,7 +6199,7 @@ snapshots:
     dependencies:
       '@tiptap/core': 3.17.0(@tiptap/pm@3.17.0)
 
-  '@tiptap/extension-underline@3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))':
+  '@tiptap/extension-underline@3.17.1(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))':
     dependencies:
       '@tiptap/core': 3.17.0(@tiptap/pm@3.17.0)
 
@@ -6245,7 +6269,7 @@ snapshots:
       '@tiptap/extension-paragraph': 3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))
       '@tiptap/extension-strike': 3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))
       '@tiptap/extension-text': 3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))
-      '@tiptap/extension-underline': 3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))
+      '@tiptap/extension-underline': 3.17.1(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))
       '@tiptap/extensions': 3.17.0(@tiptap/core@3.17.0(@tiptap/pm@3.17.0))(@tiptap/pm@3.17.0)
       '@tiptap/pm': 3.17.0
 

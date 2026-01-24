@@ -4,19 +4,29 @@ import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { Menubar } from './Menubar'
 import TextAlign from '@tiptap/extension-text-align'
+import Placeholder from '@tiptap/extension-placeholder'
+import Underline from '@tiptap/extension-underline'
+import FontFamily from '@tiptap/extension-font-family'
+
+interface FieldValue {
+    value?: string
+    onChange?: (value: string) => void
+}
 
 interface RichTextEditorProps {
     content?: string
     onChange?: (content: string) => void
     editable?: boolean
     placeholder?: string
+    field?: FieldValue
 }
 
 export default function RichTextEditor({ 
     content = '', 
     onChange,
     editable = true,
-    placeholder = 'Start typing...'
+    placeholder = 'Start typing...',
+    field
 }: RichTextEditorProps) {
 
     const editor = useEditor({
@@ -33,25 +43,42 @@ export default function RichTextEditor({
                     keepMarks: true,
                     keepAttributes: false,
                 },
+                paragraph: {
+                    HTMLAttributes: {
+                        class: 'prose-p',
+                    },
+                },
             }),
             TextAlign.configure({
                 types: ['heading', 'paragraph'],
                 alignments: ['left', 'center', 'right'],
                 defaultAlignment: 'left',
             }),
+            Underline,
+            FontFamily.configure({
+                types: ['textStyle'],
+            }),
+            Placeholder.configure({
+                placeholder: placeholder,
+                emptyEditorClass: 'is-editor-empty',
+            }),
         ],
-        content: content,
+        content: field ? (field.value ? JSON.parse(field.value) : '<p>Start typing...</p>') : content,
         editable: editable,
         immediatelyRender: false,
         editorProps: {
             attributes: {
                 class: "min-h-[250px] p-4 focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-xl dark:prose-invert !w-full !max-w-none",
-                'data-placeholder': placeholder,
             },
         },
         onUpdate: ({ editor }) => {
-            onChange?.(editor.getHTML())
+            if (field) {
+                field.onChange?.(JSON.stringify(editor.getJSON()))
+            } else {
+                onChange?.(editor.getHTML())
+            }
         },
+
     })
 
     return (
