@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import slugify from "slugify";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import RichTextEditor from "@/components/rich-text-editor/Editor";
 
 export default function CourseCreationPage() {
 
@@ -117,7 +118,8 @@ export default function CourseCreationPage() {
                                     <FormItem>
                                         <FormLabel>Add Course Details</FormLabel>
                                         <FormControl>
-                                            <Textarea className="min-h-[150px]" placeholder="Description" {...field} />
+                                            <RichTextEditor />
+                                            {/*<Textarea className="min-h-[150px]" placeholder="Description" {...field} />*/}
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
