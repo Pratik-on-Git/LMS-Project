@@ -1,18 +1,27 @@
 import { z } from "zod";
 
-const envSchema = z.object({
-  BETTER_AUTH_SECRET: z.string().min(1),
-  BETTER_AUTH_URL: z.string().url(),
-  DATABASE_URL: z.string().min(1),
-  GITHUB_CLIENT_ID: z.string().min(1),
-  GITHUB_CLIENT_SECRET: z.string().min(1),
-  EMAIL_HOST: z.string().min(1),
-  EMAIL_PORT: z.string().min(1),
-  EMAIL_SECURE: z.string(),
-  EMAIL_USER: z.string().email(),
-  EMAIL_PASSWORD: z.string().min(1),
-  EMAIL_FROM: z.string().min(1),
-  ARCJET_KEY: z.string().min(1),
-});
+// You need to import createEnv from the correct package, e.g. 'zod-env' or your own utility
+import { createEnv } from "@t3-oss/env-nextjs";
 
-export const env = envSchema.parse(process.env);
+export const env = createEnv({
+  server: {
+    DATABASE_URL: z.string().url(),
+    BETTER_AUTH_SECRET: z.string().min(1),
+    BETTER_AUTH_URL: z.string().url(),
+    AUTH_GITHUB_CLIENT_ID: z.string().min(1),
+    AUTH_GITHUB_SECRET: z.string().min(1),
+    RESEND_API_KEY: z.string().min(1),
+    ARCJET_KEY: z.string().min(1),
+    AWS_ACCESS_KEY_ID: z.string().min(1),
+    AWS_SECRET_ACCESS_KEY: z.string().min(1),
+    AWS_ENDPOINT_URL_S3: z.string().min(1),
+    AWS_ENDPOINT_URL_IAM: z.string().min(1),
+    AWS_REGION: z.string().min(1),
+  },
+  client: {
+    NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES: z.string().min(1),
+  },
+  experimental__runtimeEnv: {
+    NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES: process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES,
+  },
+});
