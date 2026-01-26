@@ -32,9 +32,10 @@ export async function POST(request: Request) {
             Bucket: env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES,
             ContentType: contentType,
             Key: uniqueKey,
-            ContentLength: size,
+            ChecksumAlgorithm: undefined, // 👈 IMPORTANT
         })
-        const presignedUrl = await getSignedUrl(S3, command, { expiresIn: 3600 })
+        const presignedUrl = await getSignedUrl(S3, command, { expiresIn: 3600, 
+            signableHeaders: new Set(["host", "content-type"]), })
 
         const response = {
             url: presignedUrl,

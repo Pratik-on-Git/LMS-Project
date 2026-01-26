@@ -9,8 +9,6 @@ import { Card, CardContent } from "../ui/card"
 import { RenderEmptyState, RenderErrorState } from "./RenderState"
 import { toast } from "sonner"
 import { v4 as uuidv4 } from "uuid"
-import { RenderError } from "next/dist/next-devtools/dev-overlay/container/runtime-error/render-error"
-
 type UploaderProps = {
     className?: string
     onDrop?: (files: File[]) => void
@@ -68,7 +66,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
                 }))
                 return
             }
-            const { presignedUrl, key } = await predesignedResponse.json()
+            const { url: presignedUrl, key } = await predesignedResponse.json()
 
             await new Promise<void>((resolve, reject) => {
                 const xhr = new XMLHttpRequest()
@@ -100,12 +98,17 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
                     reject(new Error("Upload failed"))
                 }
 
-
                 xhr.open("PUT", presignedUrl)
                 xhr.setRequestHeader("Content-Type", file.type)
                 xhr.send(file)
+
             }).catch(() => {
                 toast.error("Something went wrong during the upload.")
+                setFileState((prev) => ({
+                    ...prev,
+                    uploading: false,
+                    error: true,
+                }))
             })
         } catch (error) {
             toast.error("Something went wrong during the upload.")
