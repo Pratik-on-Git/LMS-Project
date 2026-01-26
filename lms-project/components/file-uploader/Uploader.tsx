@@ -9,6 +9,7 @@ import { Card, CardContent } from "../ui/card"
 import { RenderEmptyState, RenderErrorState } from "./RenderState"
 import { toast } from "sonner"
 import { v4 as uuidv4 } from "uuid"
+import { RenderError } from "next/dist/next-devtools/dev-overlay/container/runtime-error/render-error"
 
 type UploaderProps = {
     className?: string
@@ -25,11 +26,9 @@ interface UploaderState {
     error: boolean
     objectUrl?: string
     fileType: "image" | "video"
-
 }
 
 export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
-
     const [fileState, setFileState] = useState<UploaderState>({
         error: false,
         id: null,
@@ -40,27 +39,92 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
         fileType: "image",
     })
 
-    function uploadFile(file: File) {
-        setFileState((prev) =>({
+    async function uploadFile(file: File) {
+        setFileState((prev) => ({
             ...prev,
             uploading: true,
             progress: 0,
         }))
 
         try {
+            const predesignedResponse = await fetch("/api/s3/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    contentType: file.type,
+                    size: file.size,
+                    isImage: true,
+                }),
+            })
 
-        }
-        catch (error) {
-            
+            if (!predesignedResponse.ok) {
+                toast.error("Failed to get presigned URL")
+                setFileState((prev) => ({
+                    ...prev,
+                    uploading: false,
+                    progress: 0,
+                    error: true,
+                }))
+                return
+            }
+            const { presignedUrl, key } = await predesignedResponse.json()
+
+            await new Promise<void>((resolve, reject) => {
+                const xhr = new XMLHttpRequest()
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const percentageCompleted = (event.loaded / event.total) * 100
+                        setFileState((prev) => ({
+                            ...prev,
+                            progress: Math.round(percentageCompleted),
+                        }))
+                    }
+                }
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        setFileState((prev) => ({
+                            ...prev,
+                            uploading: false,
+                            progress: 100,
+                            key: key,
+                        }))
+                        toast.success("File uploaded successfully")
+                        resolve()
+                    } else {
+                        reject(new Error("Upload failed"))
+                    }
+                }
+
+                xhr.onerror = () => {
+                    reject(new Error("Upload failed"))
+                }
+
+
+                xhr.open("PUT", presignedUrl)
+                xhr.setRequestHeader("Content-Type", file.type)
+                xhr.send(file)
+            }).catch(() => {
+                toast.error("Something went wrong during the upload.")
+            })
+        } catch (error) {
+            toast.error("Something went wrong during the upload.")
+            setFileState((prev) => ({
+                ...prev,
+                uploading: false,
+                error: true,
+            }))
         }
     }
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
-        if (acceptedFiles.length === 0) {
+    const onDrop = useCallback(
+        (acceptedFiles: File[]) => {
+            if (acceptedFiles.length === 0) return
+
             const file = acceptedFiles[0]
 
             setFileState({
-                file: file,
+                file,
                 uploading: false,
                 progress: 0,
                 objectUrl: URL.createObjectURL(file),
@@ -69,10 +133,11 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
                 isDeleting: false,
                 fileType: "image",
             })
-        }
-    },
 
-        [],
+            onDropProp?.(acceptedFiles)
+            uploadFile(file)
+        },
+        [onDropProp],
     )
 
     function rejectedFiles(fileRejection: FileRejection[]) {
@@ -91,12 +156,32 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
         }
     }
 
+    function renderContent() {
+        if (fileState.uploading) {
+            return (
+                <div className="text-center"> Uploading... {fileState.progress}% </div>
+            )
+        }
+
+        if (fileState.error) {
+            return (
+                <RenderErrorState />
+            )
+        }
+
+        if (fileState.objectUrl) {
+            return (<h1>Upload File</h1>)
+        }
+
+        return <RenderEmptyState isDragActive={isDragActive} />
+    }
+
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
             "image/*": [],
         },
-        maxFiles: 5,
+        maxFiles: 1,
         multiple: false,
         maxSize: 5 * 1024 * 1024, // 5 MB
         onDropRejected: rejectedFiles,
@@ -113,7 +198,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
         >
             <CardContent className="flex items-center justify-center h-full w-full p-4">
                 <input {...getInputProps()} />
-                <RenderEmptyState isDragActive={isDragActive} />
+                {renderContent()}
             </CardContent>
         </Card>
     )

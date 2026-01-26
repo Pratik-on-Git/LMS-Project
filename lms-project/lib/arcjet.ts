@@ -2,7 +2,7 @@ import "server-only";
 import arcjet, {
 detectBot, fixedWindow, protectSignup, sensitiveInfo, shield, slidingWindow
 } from '@arcjet/next'
-import { env } from 'process'
+import { env } from './env';
 
 export {
     detectBot,
