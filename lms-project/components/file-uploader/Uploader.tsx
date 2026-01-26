@@ -6,7 +6,7 @@ import { FileRejection, useDropzone } from "react-dropzone"
 import { cn } from "@/lib/utils"
 
 import { Card, CardContent } from "../ui/card"
-import { RenderEmptyState, RenderErrorState } from "./RenderState"
+import { RenderEmptyState, RenderErrorState, RenderUploadedState, RenderUploadingState } from "./RenderState"
 import { toast } from "sonner"
 import { v4 as uuidv4 } from "uuid"
 type UploaderProps = {
@@ -162,7 +162,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
     function renderContent() {
         if (fileState.uploading) {
             return (
-                <div className="text-center"> Uploading... {fileState.progress}% </div>
+                <RenderUploadingState progress={fileState.progress} file={fileState.file as File} />
             )
         }
 
@@ -173,7 +173,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
         }
 
         if (fileState.objectUrl) {
-            return (<h1>Upload File</h1>)
+            return (<RenderUploadedState previewUrl={fileState.objectUrl} />)
         }
 
         return <RenderEmptyState isDragActive={isDragActive} />
