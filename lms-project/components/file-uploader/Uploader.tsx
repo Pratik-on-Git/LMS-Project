@@ -9,6 +9,7 @@ import { Card, CardContent } from "../ui/card"
 import { RenderEmptyState, RenderErrorState, RenderUploadedState, RenderUploadingState } from "./RenderState"
 import { toast } from "sonner"
 import { v4 as uuidv4 } from "uuid"
+import { useConstructUrl } from "@/hooks/use-construct"
 type UploaderProps = {
     className?: string
     onDrop?: (files: File[]) => void
@@ -29,6 +30,8 @@ interface UploaderState {
 }
 
 export function Uploader({ className, onDrop: onDropProp, value, onChange }: UploaderProps) {
+    const fileUrl = useConstructUrl(value || "")
+    
     const [fileState, setFileState] = useState<UploaderState>({
         error: false,
         id: null,
@@ -38,6 +41,7 @@ export function Uploader({ className, onDrop: onDropProp, value, onChange }: Upl
         isDeleting: false,
         fileType: "image",
         key: value,
+        objectUrl: fileUrl,
     })
 
     const uploadFile = useCallback(async (file: File) => {

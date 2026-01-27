@@ -61,8 +61,6 @@ export async function CreateCourse(values: unknown): Promise<ApiResponse> {
       data: {
         ...prismaData,
         userId: session?.user.id as string,
-        level: prismaData.level as "BEGINNER" | "INTERMEDIATE" | "ADVANCED",
-        status: prismaData.status as "DRAFT" | "PUBLISHED" | "ARCHIVED",
       },
     });
 

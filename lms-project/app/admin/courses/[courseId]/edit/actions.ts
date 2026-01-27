@@ -5,17 +5,53 @@ import { prisma } from "@/lib/db";
 import { ApiResponse } from "@/lib/types";
 import { courseSchema, CourseFormData, mapFormToPrisma } from "@/lib/zodSchemas";
 import { adminGetCourse } from "@/app/data/admin/admin-get-course";
+import arcjet, { detectBot, fixedWindow, request } from "@arcjet/next";
+import { env } from "@/lib/env";
+
+const aj = arcjet({
+    key: env.ARCJET_KEY || "",
+    characteristics: ["fingerprint"],
+    rules: [
+        detectBot({
+            mode: "LIVE",
+            allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "CATEGORY:MONITOR"],
+        }),
+        fixedWindow({
+            mode: "LIVE",
+            window: "1m",
+            max: 10,
+        }),
+    ],
+})
 
 export async function editCourse({ data, courseId }: { data: CourseFormData; courseId: string }): Promise<ApiResponse> {
   const user = await requireAdmin();
-
   try {
+    const req = await request();
+    const decision = await aj.protect(req, {
+      fingerprint: user.user.id,
+    });
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        return {
+          status: "error",
+          message: "Too many requests. Please try again later.",
+        };
+      } else {
+        return {
+          status: "error",
+          message: "Request blocked. If this is an error, please contact support.",
+        };
+      }
+    }
+
     const result = courseSchema.safeParse(data);
     if (!result.success) {
-        return {
-            status: "error",
-            message: "Invalid form data",
-        };
+      return {
+        status: "error",
+        message: "Invalid form data",
+      };
     }
 
     // Map UI values to Prisma enum values
@@ -25,12 +61,10 @@ export async function editCourse({ data, courseId }: { data: CourseFormData; cou
       where: {
         id: courseId,
         userId: user.user.id,
-        },
+      },
       data: {
         ...prismaData,
-        level: prismaData.level as "BEGINNER" | "INTERMEDIATE" | "ADVANCED",
-        status: prismaData.status as "DRAFT" | "PUBLISHED" | "ARCHIVED",
-      }
+      },
     });
 
     // Fetch the updated course data
