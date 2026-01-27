@@ -105,7 +105,7 @@ export default function CourseCreationPage() {
                                     <FormItem className="w-full">
                                         <FormLabel>Add a Small Description</FormLabel>
                                         <FormControl>
-                                            <Textarea className="min-h-[80px]" placeholder="Small Description" {...field} />
+                                            <Textarea className="min-h-20" placeholder="Small Description" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -133,8 +133,7 @@ export default function CourseCreationPage() {
                                     <FormItem>
                                         <FormLabel>Thumbnail Image</FormLabel>
                                         <FormControl>
-                                            {/*<Input placeholder="Thumbnail Image URL" {...field} />*/}
-                                            <Uploader />
+                                            <Uploader onChange={field.onChange} value={field.value} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

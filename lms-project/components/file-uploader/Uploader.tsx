@@ -12,6 +12,8 @@ import { v4 as uuidv4 } from "uuid"
 type UploaderProps = {
     className?: string
     onDrop?: (files: File[]) => void
+    value?: string
+    onChange?: (value: string) => void
 }
 
 interface UploaderState {
@@ -26,7 +28,7 @@ interface UploaderState {
     fileType: "image" | "video"
 }
 
-export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
+export function Uploader({ className, onDrop: onDropProp, value, onChange }: UploaderProps) {
     const [fileState, setFileState] = useState<UploaderState>({
         error: false,
         id: null,
@@ -35,9 +37,10 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
         progress: 0,
         isDeleting: false,
         fileType: "image",
+        key: value,
     })
 
-    async function uploadFile(file: File) {
+    const uploadFile = useCallback(async (file: File) => {
         setFileState((prev) => ({
             ...prev,
             uploading: true,
@@ -87,6 +90,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
                             progress: 100,
                             key: key,
                         }))
+                        onChange?.(key)
                         toast.success("File uploaded successfully")
                         resolve()
                     } else {
@@ -110,7 +114,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
                     error: true,
                 }))
             })
-        } catch (error) {
+        } catch {
             toast.error("Something went wrong during the upload.")
             setFileState((prev) => ({
                 ...prev,
@@ -118,7 +122,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
                 error: true,
             }))
         }
-    }
+    }, [onChange])
 
     const onDrop = useCallback(
         (acceptedFiles: File[]) => {
@@ -143,7 +147,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
             onDropProp?.(acceptedFiles)
             uploadFile(file)
         },
-        [onDropProp, fileState.objectUrl],
+        [onDropProp, uploadFile, fileState.objectUrl],
     )
 
     async function handleRemoveFile() {
@@ -177,6 +181,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
                 URL.revokeObjectURL(fileState.objectUrl)
             }
 
+            onChange?.("")
             setFileState(() => ({
                 file: null,
                 uploading: false,
