@@ -258,6 +258,7 @@ export function Uploader({ className, onDrop: onDropProp }: UploaderProps) {
         multiple: false,
         maxSize: 5 * 1024 * 1024, // 5 MB
         onDropRejected: rejectedFiles,
+        disabled: fileState.uploading || !!fileState.objectUrl,
     })
 
     return (
