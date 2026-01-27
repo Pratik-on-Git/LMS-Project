@@ -3,8 +3,10 @@ import Image from "next/image";
 import { AdminCourseType } from "@/app/data/admin/admin-get-courses";
 import { useConstructUrl } from "@/hooks/use-construct";
 import Link from "next/link";
-import { ArrowRight, School2, TimerIcon } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { ArrowRight, Eye, MoreVertical, Pencil, School2, TimerIcon, Trash2 } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 
 interface iAppProps {
     data: AdminCourseType;
@@ -15,6 +17,36 @@ export function AdminCourseCard({ data }: iAppProps) {
     return (
         <Card className="group relative overflow-hidden py-0 gap-0">
             <div className="relative w-full aspect-video bg-muted">
+                <div className="absolute top-2 right-2 z-10">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="secondary"
+                                size="icon"
+                            >
+                                <MoreVertical className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem asChild>
+                                <Link href={`/admin/courses/${data.id}/edit`} className="flex items-center">
+                                    <Pencil className="size-4 mr-2"/> Edit Course
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href={`/courses/${data.slug}`} className="flex items-center">
+                                    <Eye className="size-4 mr-2"/> Preview
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                                <Link href={`/admin/courses/${data.id}/delete`} className="flex items-center">
+                                    <Trash2 className="size-4 mr-2 text-destructive"/> Delete Course
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
                 {thumbnailUrl ? (
                     <Image
                         src={thumbnailUrl}

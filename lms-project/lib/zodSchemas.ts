@@ -46,15 +46,15 @@ export type CourseFormData = z.infer<typeof courseSchema>;
 // Helper function to map UI values to Prisma enum values
 export function mapFormToPrisma(data: CourseFormData) {
     const levelMap: Record<typeof data.level, string> = {
-        "Beginner": "BEGINNER",
-        "Intermediate": "INTERMEDIATE",
-        "Advanced": "ADVANCED",
+        "Beginner": "Beginner",
+        "Intermediate": "Intermediate",
+        "Advanced": "Advanced",
     };
 
     const statusMap: Record<typeof data.status, string> = {
-        "Draft": "DRAFT",
-        "Published": "PUBLISHED",
-        "Archived": "ARCHIVED",
+        "Draft": "Draft",
+        "Published": "Published",
+        "Archived": "Archived",
     };
 
     return {
