@@ -48,6 +48,7 @@ export default function RichTextEditor({
                         class: 'prose-p',
                     },
                 },
+                underline: false,
             }),
             TextAlign.configure({
                 types: ['heading', 'paragraph'],
