@@ -1,17 +1,51 @@
 "use server";
 import { ApiResponse } from "@/lib/types";
-import { courseSchemaType, courseSchema, mapFormToPrisma } from "@/lib/zodSchemas";
+import { courseSchema, mapFormToPrisma } from "@/lib/zodSchemas";
 import { prisma } from "@/lib/db";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import arcjet, { detectBot, fixedWindow, request } from "@arcjet/next"
+import { requireAdmin } from "@/app/data/admin/require-admin"
+import { env } from "@/lib/env";
 
-export async function CreateCourse(
-  values: courseSchemaType,
-): Promise<ApiResponse> {
+const aj = arcjet({
+    key: env.ARCJET_KEY || "",
+    characteristics: ["fingerprint"],
+    rules: [
+        detectBot({
+            mode: "LIVE",
+            allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "CATEGORY:MONITOR"],
+        }),
+        fixedWindow({
+            mode: "LIVE",
+            window: "1m",
+            max: 10,
+        }),
+    ],
+})
+
+export async function CreateCourse(values: unknown): Promise<ApiResponse> {
+  const session = await requireAdmin();
   try {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
+
+    const req = await request()
+    const decision = await aj.protect(req, {
+        fingerprint: session.user.id,
+    })
+
+    if (decision.isDenied()) {
+        if (decision.reason.isRateLimit()) {
+            return {
+                status: "error",
+                message: "Too many requests. Please try again later.",
+            }
+        }
+        else {
+            return {
+                status: "error",
+                message: "Request blocked. If this is an error, please contact support.",
+            }
+        }
+    }
+
     const validation = courseSchema.safeParse(values);
     if (!validation.success) {
       return {
@@ -27,6 +61,8 @@ export async function CreateCourse(
       data: {
         ...prismaData,
         userId: session?.user.id as string,
+        level: prismaData.level as "BEGINNER" | "INTERMEDIATE" | "ADVANCED",
+        status: prismaData.status as "DRAFT" | "PUBLISHED" | "ARCHIVED",
       },
     });
 
@@ -35,8 +71,7 @@ export async function CreateCourse(
       message: "Course created successfully",
       data: validation.data,
     };
-  } catch (error) {
-    console.log(error)
+  } catch {
     return {
       status: "error",
       message: "Failed to create course",

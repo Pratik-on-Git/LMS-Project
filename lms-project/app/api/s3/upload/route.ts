@@ -5,6 +5,8 @@ import { z } from "zod"
 import { v4 as uuidv4 } from "uuid"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { S3 } from "@/lib/S3Client"
+import arcjet, { detectBot, fixedWindow } from "@arcjet/next"
+import { requireAdmin } from "@/app/data/admin/require-admin"
 
 
 export const fileUploadSchema = z.object({
@@ -14,8 +16,33 @@ export const fileUploadSchema = z.object({
     isImage: z.boolean(),
 })
 
+const aj = arcjet({
+    key: env.ARCJET_KEY || "",
+    characteristics: ["fingerprint"],
+    rules: [
+        detectBot({
+            mode: "LIVE",
+            allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "CATEGORY:MONITOR"],
+        }),
+        fixedWindow({
+            mode: "LIVE",
+            window: "1m",
+            max: 10,
+        }),
+    ],
+})
+
 export async function POST(request: Request) {
+    await requireAdmin()
     try {
+        const decision = await aj.protect(request, {
+            fingerprint: "admin-upload",
+        })
+
+        if (decision.isDenied()) {
+            return NextResponse.json({ error: "Request blocked" }, { status: 429 })
+        }
+
         const body = await request.json()
 
         const validation = fileUploadSchema.safeParse(body)
@@ -24,7 +51,7 @@ export async function POST(request: Request) {
             return NextResponse.json({error: "Invalid request body"}, { status: 400 })
         }
 
-        const { fileName, contentType, size } = validation.data
+        const { fileName, contentType } = validation.data
 
         const uniqueKey = `${uuidv4()}-${fileName}`
 
@@ -43,7 +70,7 @@ export async function POST(request: Request) {
         };
 
         return NextResponse.json(response)
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
