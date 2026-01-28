@@ -7,6 +7,7 @@ import { courseSchema, CourseFormData, mapFormToPrisma } from "@/lib/zodSchemas"
 import { adminGetCourse } from "@/app/data/admin/admin-get-course";
 import arcjet, { detectBot, fixedWindow, request } from "@arcjet/next";
 import { env } from "@/lib/env";
+import { revalidatePath } from "next/cache";
 
 const aj = arcjet({
     key: env.ARCJET_KEY || "",
@@ -83,3 +84,33 @@ export async function editCourse({ data, courseId }: { data: CourseFormData; cou
     };
   }
 }
+
+export async function reorderLessons(chapterId: string, lessons: {id: string, position: number}[], courseId: string): Promise<ApiResponse> {
+    try {
+      if (!lessons || lessons.length === 0) {
+        return {
+          status: "error",
+          message: "No lessons provided for reordering",
+        };
+      }
+
+      const updates = lessons.map((lesson) => prisma.lesson.update({
+        where: { id: lesson.id, chapterId: chapterId },
+        data: { position: lesson.position },
+      }));
+
+      await prisma.$transaction(updates);
+      revalidatePath(`/admin/courses/${courseId}/edit`);
+      return ({
+        status: "success",
+        message: "Lessons reordered successfully",
+      })
+
+    } catch {
+      return {
+        status: "error",
+        message: "An error occurred while reordering lessons",
+      };
+    }
+  }
+

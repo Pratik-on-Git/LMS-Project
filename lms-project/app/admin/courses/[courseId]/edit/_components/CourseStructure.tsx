@@ -3,7 +3,7 @@
 import { AdminCourseSingularType } from "@/app/data/admin/admin-get-course";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { DndContext, DraggableSyntheticListeners, KeyboardSensor, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DraggableSyntheticListeners, KeyboardSensor, PointerSensor, rectIntersection, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -12,6 +12,8 @@ import { ReactNode, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CollapsibleContent } from "@radix-ui/react-collapsible";
+import { toast } from "sonner";
+import { reorderLessons } from "../actions";
 
 interface iAppProps {
     data: AdminCourseSingularType;
@@ -59,30 +61,102 @@ export function CourseStructure({ data }: iAppProps) {
             <div ref={setNodeRef} style={style} {...attributes}
                 className={cn("touch-none", className, isDragging ? 'z-10' : '')}>
                 {id === 'keyboard' ? (
-                    <div className="flex items-center space-x-2 p-4 border rounded-md mb-2 bg-secondary/50">
+                    <div className="flex items-center space-x-2 p-4 bg-secondary/50">
                         <Keyboard className="h-5 w-5" />
                     </div>
                 ) : (
-                    <div className="p-4 border rounded-md mb-2">{children(listeners)}</div>
-                )}
+                    // For lessons we don't want the extra card/border wrapper — render children directly
+                    data?.type === 'lesson' ? (
+                        children(listeners)
+                    ) : (
+                        <div className="p-4 border rounded-md mb-2">{children(listeners)}</div>
+                    ))}
             </div>
         );
     }
 
-    function handleDragEnd(event) {
+    function handleChapterDragEnd(event: DragEndEvent) {
         const { active, over } = event;
-
-        if (active.id !== over.id) {
-            setItems((items) => {
-                const oldIndex = items.indexOf(active.id);
-                const newIndex = items.indexOf(over.id);
-
-                return arrayMove(items, oldIndex, newIndex);
-            });
+        if (!over || active.id === over.id) return;
+        const activeId = active.id;
+        const overId = over.id;
+        const activeType = active.data.current?.type as 'chapter';
+        const overType = over.data.current?.type as 'chapter';
+        if (activeType === 'chapter' && overType === 'chapter') {
+            const oldIndex = items.findIndex((item) => item.id === activeId);
+            const newIndex = items.findIndex((item) => item.id === overId);
+            if (oldIndex === -1 || newIndex === -1) {
+                toast.error("Could not find chapter to reorder.");
+                return;
+            }
+            const reorderedLocalChapter = arrayMove(items, oldIndex, newIndex);
+            const updatedChapterForState = reorderedLocalChapter.map((chapter, index) => ({
+                ...chapter,
+                order: index + 1,
+            }));
+            setItems(updatedChapterForState);
         }
-
     }
 
+    function handleLessonDragEnd(chapterId: string, event: DragEndEvent) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const activeId = active.id;
+        const overId = over.id;
+        const chapterIndex = items.findIndex((item) => item.id === chapterId);
+        if (chapterIndex === -1) {
+            toast.error("Could not find chapter for reordering lessons.");
+            return;
+        }
+        const chapterToUpdate = items[chapterIndex];
+        const oldLessonIndex = chapterToUpdate.lessons.findIndex((lesson) => lesson.id === activeId);
+        const newLessonIndex = chapterToUpdate.lessons.findIndex((lesson) => lesson.id === overId);
+        if (oldLessonIndex === -1 || newLessonIndex === -1) {
+            toast.error("Could not find lesson to reorder.");
+            return;
+        }
+        const previousItems = [...items]; // Store previous state before updating
+        const reorderedLessons = arrayMove(chapterToUpdate.lessons, oldLessonIndex, newLessonIndex);
+        const updatedLessonsForState = reorderedLessons.map((lesson, index) => ({
+            ...lesson,
+            order: index + 1,
+        }));
+        const newItems = [...items];
+        newItems[chapterIndex] = {
+            ...chapterToUpdate,
+            lessons: updatedLessonsForState,
+        };
+        setItems(newItems);
+
+        if (data.id) {
+            const lessonsToUpdate = updatedLessonsForState.map((lesson) => ({
+                id: lesson.id,
+                position: lesson.order,
+            }));
+
+            const reorderLessonsPromise = () => reorderLessons(chapterId, lessonsToUpdate, data.id);
+
+            toast.promise(
+                reorderLessonsPromise(),
+                {
+                    loading: "Reordering lessons...",
+                    success: (result) => {
+                        if (result.status === "success") {
+                            return result.message;
+                        } else {
+                            throw new Error(result.message);
+                        }
+                    },
+                    error: () => {
+                        setItems(previousItems);
+                        return "Failed to reorder lessons.";
+                }
+                }
+            );
+        }
+
+        return;
+    }
     function toggleChapeter(chapterId: string) {
         setItems(
             items.map((chapter) => chapter.id === chapterId ? { ...chapter, isOpen: !chapter.isOpen } : chapter
@@ -93,11 +167,17 @@ export function CourseStructure({ data }: iAppProps) {
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
-        }
-        )
+        })
+    );
+    // For lessons, use a separate sensors instance to avoid cross-chapter drag
+    const lessonSensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
     );
     return (
-        <DndContext collisionDetection={rectIntersection} sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext collisionDetection={rectIntersection} sensors={sensors} onDragEnd={handleChapterDragEnd}>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                     <CardTitle className="text-xl">Chapters</CardTitle>
@@ -108,8 +188,8 @@ export function CourseStructure({ data }: iAppProps) {
                         {items.map((item) => (
                             <SortableItem key={item.id} id={item.id} data={{ type: 'chapter' }}>
                                 {(listeners) =>
-                                    <Card>
-                                        <Collapsible open={item.isOpen} onOpenChange={()=> toggleChapeter(item.id)}>
+                                    <div className="mb-0">
+                                        <Collapsible open={item.isOpen} onOpenChange={() => toggleChapeter(item.id)}>
                                             <div className="flex items-center justify-between p-3 border-b border-border">
                                                 <div className="flex items-center gap-2">
                                                     <Button size="icon" variant="ghost" className="cursor-grab opacity-60 hover:opacity-100" {...listeners}>
@@ -117,10 +197,10 @@ export function CourseStructure({ data }: iAppProps) {
                                                     </Button>
                                                     <CollapsibleTrigger>
                                                         <Button size="icon" variant="ghost" className="flex items-center gap-2">
-                                                            {item.isOpen? (<ChevronDown className="size-4" />) : (<ChevronRight className="size-4" />)}
+                                                            {item.isOpen ? (<ChevronDown className="size-4" />) : (<ChevronRight className="size-4" />)}
                                                         </Button>
                                                     </CollapsibleTrigger>
-                                                    <p className="cursor-pointer hover:text-primary pl-2">{item.title}</p>
+                                                    <span className="cursor-pointer hover:text-primary pl-2 text-lg font-normal">{item.title}</span>
                                                 </div>
                                                 <Button size="icon" variant="outline">
                                                     <Trash2 className="size-4" />
@@ -129,27 +209,40 @@ export function CourseStructure({ data }: iAppProps) {
 
                                             <CollapsibleContent>
                                                 <div className="p-1">
-                                                    <SortableContext items={item.lessons.map((lesson) => lesson.id)} strategy={verticalListSortingStrategy}>
-                                                        {item.lessons.map((lesson) => (
-                                                            <SortableItem key={lesson.id} id={lesson.id} data={{ type: 'lesson', chapterId: item.id }}>
-                                                                {(lessonListeners) =>
-                                                                    <div className="flex items-center justify-between p-2 hover:bg-accent rounded-sm">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <Button size="icon" variant="ghost" {...lessonListeners}>
-                                                                                <GripVertical className="size-4" />
-                                                                            </Button>   
-                                                                            <FileText className="size-4"/> 
-                                                                            <Link href={`/admin/courses/${data.id}/${item.id}/${lesson.id}`}>{lesson.title}</Link>
+                                                    {/* Each chapter's lessons get their own DndContext and SortableContext */}
+                                                    <DndContext
+                                                        collisionDetection={rectIntersection}
+                                                        sensors={lessonSensors}
+                                                        onDragEnd={(event) => handleLessonDragEnd(item.id, event)}
+                                                    >
+                                                        <SortableContext
+                                                            items={item.lessons.map((lesson) => lesson.id)}
+                                                            strategy={verticalListSortingStrategy}
+                                                        >
+                                                            {item.lessons.map((lesson) => (
+                                                                <SortableItem
+                                                                    key={lesson.id}
+                                                                    id={lesson.id}
+                                                                    data={{ type: 'lesson', chapterId: item.id }}
+                                                                >
+                                                                    {(lessonListeners) => (
+                                                                        <div className="flex items-center justify-between py-3 px-4 hover:bg-accent">
+                                                                            <div className="flex items-center gap-3">
+                                                                                <Button size="icon" variant="ghost" className="p-0" {...lessonListeners}>
+                                                                                    <GripVertical className="size-4" />
+                                                                                </Button>
+                                                                                <FileText className="size-4" />
+                                                                                <Link href={`/admin/courses/${data.id}/${item.id}/${lesson.id}`} className="text-base font-normal">{lesson.title}</Link>
+                                                                            </div>
+                                                                            <Button size="icon" variant="ghost" className="opacity-80">
+                                                                                <Trash2 className="size-4" />
+                                                                            </Button>
                                                                         </div>
-                                                                        <Button size="icon" variant="outline">
-                                                                            <Trash2 className="size-4" />
-                                                                        </Button>
-                                                                    </div>
-                                                                }
-                                                            </SortableItem>
-                                                        ))}
-
-                                                    </SortableContext>
+                                                                    )}
+                                                                </SortableItem>
+                                                            ))}
+                                                        </SortableContext>
+                                                    </DndContext>
                                                     <div className="p-2">
                                                         <Button variant="outline" className="w-full">Create Lesson</Button>
                                                     </div>
@@ -157,7 +250,7 @@ export function CourseStructure({ data }: iAppProps) {
 
                                             </CollapsibleContent>
                                         </Collapsible>
-                                    </Card>
+                                    </div>
                                 }
                             </SortableItem>
                         ))}
