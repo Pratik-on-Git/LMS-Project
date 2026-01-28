@@ -13,7 +13,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CollapsibleContent } from "@radix-ui/react-collapsible";
 import { toast } from "sonner";
-import { reorderLessons } from "../actions";
+import { reorderChapters, reorderLessons } from "../actions";
+import { error } from "console";
 
 interface iAppProps {
     data: AdminCourseSingularType;
@@ -94,7 +95,36 @@ export function CourseStructure({ data }: iAppProps) {
                 ...chapter,
                 order: index + 1,
             }));
+
+            const previousItems = [...items]; // Store previous state before updating       
+
             setItems(updatedChapterForState);
+            if (data.id)   {
+                const chaptersToUpdate = updatedChapterForState.map((chapter) => ({
+                    id: chapter.id,
+                    position: chapter.order,
+                }));
+                const reorderPromise = () => reorderChapters(data.id, chaptersToUpdate);
+
+                toast.promise(
+                    reorderPromise(),
+                    {
+                        loading: "Reordering chapters...",
+                        success: (result) => {
+                            if (result.status === "success") {
+                                return result.message;
+                            } else {
+                                throw new Error(result.message);
+                            }
+                        },
+                        error: () => {
+                            setItems(previousItems);
+                            return "Failed to reorder chapters.";
+                        } 
+                    }
+                );
+            }
+            return;
         }
     }
 
@@ -195,10 +225,12 @@ export function CourseStructure({ data }: iAppProps) {
                                                     <Button size="icon" variant="ghost" className="cursor-grab opacity-60 hover:opacity-100" {...listeners}>
                                                         <GripVertical className="size-4" />
                                                     </Button>
-                                                    <CollapsibleTrigger>
-                                                        <Button size="icon" variant="ghost" className="flex items-center gap-2">
-                                                            {item.isOpen ? (<ChevronDown className="size-4" />) : (<ChevronRight className="size-4" />)}
-                                                        </Button>
+                                                    <CollapsibleTrigger asChild>
+                                                        {item.isOpen ? (
+                                                            <ChevronDown className="size-4 cursor-pointer" />
+                                                        ) : (
+                                                            <ChevronRight className="size-4 cursor-pointer" />
+                                                        )}
                                                     </CollapsibleTrigger>
                                                     <span className="cursor-pointer hover:text-primary pl-2 text-lg font-normal">{item.title}</span>
                                                 </div>
