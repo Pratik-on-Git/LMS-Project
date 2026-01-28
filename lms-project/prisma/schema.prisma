@@ -122,14 +122,14 @@ model Chapter {
 }
 
 model Lesson {
-  id        String   @id @default(uuid())
-  title     String
-  description String?
+  id           String   @id @default(uuid())
+  title        String
+  description  String?
   thumbnailKey String?
-  videoKey   String?
-  chapterId  String
-  position  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Chapter    Chapter  @relation(fields: [chapterId], references: [id])
+  videoKey     String?
+  position     Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  Chapter      Chapter  @relation(fields: [chapterId], references: [id])
+  chapterId    String
 }

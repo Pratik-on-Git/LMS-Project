@@ -1,5 +1,5 @@
-
 import z from "zod";
+import { de, th } from "zod/v4/locales";
 
 
 export const courseLevels = ["Beginner", "Intermediate", "Advanced"] as const;
@@ -41,8 +41,25 @@ export const courseSchema = z.object({
     status: z.enum(courseStatuses, {message: "Status is required"}),
 })
 
+export const chapterSchema = z.object({
+    name: z.string().min(3, {message: "Chapter Name must be at least 3 characters long"}).max(100, {message: "Chapter name must be at most 100 characters long"}),
+    courseId: z.string().uuid({message: "Invalid Course ID"}),
+});
+
+export const lessonSchema = z.object({
+    name: z.string().min(3, { message: "Name must be at least 3 characters long" }),
+    courseId: z.string().uuid({ message: "Invalid Course ID" }),
+    chapterId: z.string().uuid({ message: "Invalid Chapter ID" }),
+    description: z.string().min(3, { message: "Description must be at least 3 characters long" }).optional(),
+    thumbnailKey: z.string().optional(),
+    videoKey: z.string().optional(),
+});
+
 export type CourseFormData = z.infer<typeof courseSchema>;
 
+export type ChapterSchemaType = z.infer<typeof chapterSchema>;
+
+export type LessonSchemaType = z.infer<typeof lessonSchema>;
 // Helper function to map UI values to Prisma enum values
 export function mapFormToPrisma(data: CourseFormData) {
     const levelMap: Record<typeof data.level, "BEGINNER" | "INTERMEDIATE" | "ADVANCED"> = {

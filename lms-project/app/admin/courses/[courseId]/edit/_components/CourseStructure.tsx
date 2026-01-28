@@ -7,14 +7,17 @@ import { DndContext, DraggableSyntheticListeners, KeyboardSensor, PointerSensor,
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight, FileText, GripVertical, Keyboard, Trash2 } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ChevronDown, ChevronRight, FileText, GripVertical, Keyboard } from "lucide-react";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CollapsibleContent } from "@radix-ui/react-collapsible";
 import { toast } from "sonner";
 import { reorderChapters, reorderLessons } from "../actions";
-import { error } from "console";
+import { NewChapterModal } from "./NewChapterModal";
+import { NewLessonModal } from "./NewLessonModal";
+import { DeleteLesson } from "./DeleteLesson";
+import { DeleteChapter } from "./DeleteChapter";
 
 interface iAppProps {
     data: AdminCourseSingularType;
@@ -42,6 +45,23 @@ export function CourseStructure({ data }: iAppProps) {
         })),
     })) || [];
     const [items, setItems] = useState(initialItems); // Placeholder for chapter IDs
+
+    useEffect(() => {
+        setItems((prevItems) => {
+            const updatedItems = data.chapter.map((chapter) => ({
+                id: chapter.id,
+                title: chapter.title,
+                order: chapter.position,
+                isOpen: prevItems.find((item) => item.id === chapter.id)?.isOpen ?? true,
+                lessons: chapter.lessons.map((lesson) => ({
+                    id: lesson.id,
+                    title: lesson.title,
+                    order: lesson.position,
+                })),
+            })) || [];
+            return updatedItems;
+        })
+    }, [data]);
 
     function SortableItem({ id, children, className, data }: SortableItemProps) {
         const {
@@ -99,7 +119,7 @@ export function CourseStructure({ data }: iAppProps) {
             const previousItems = [...items]; // Store previous state before updating       
 
             setItems(updatedChapterForState);
-            if (data.id)   {
+            if (data.id) {
                 const chaptersToUpdate = updatedChapterForState.map((chapter) => ({
                     id: chapter.id,
                     position: chapter.order,
@@ -120,7 +140,7 @@ export function CourseStructure({ data }: iAppProps) {
                         error: () => {
                             setItems(previousItems);
                             return "Failed to reorder chapters.";
-                        } 
+                        }
                     }
                 );
             }
@@ -180,7 +200,7 @@ export function CourseStructure({ data }: iAppProps) {
                     error: () => {
                         setItems(previousItems);
                         return "Failed to reorder lessons.";
-                }
+                    }
                 }
             );
         }
@@ -211,6 +231,7 @@ export function CourseStructure({ data }: iAppProps) {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                     <CardTitle className="text-xl">Chapters</CardTitle>
+                    <NewChapterModal courseId={data.id} />
                 </CardHeader>
                 <CardContent>
                     {/* Course structure content goes here */}
@@ -234,9 +255,7 @@ export function CourseStructure({ data }: iAppProps) {
                                                     </CollapsibleTrigger>
                                                     <span className="cursor-pointer hover:text-primary pl-2 text-lg font-normal">{item.title}</span>
                                                 </div>
-                                                <Button size="icon" variant="outline">
-                                                    <Trash2 className="size-4" />
-                                                </Button>
+                                                <DeleteChapter chapterId={item.id} courseId={data.id} />
                                             </div>
 
                                             <CollapsibleContent>
@@ -266,9 +285,7 @@ export function CourseStructure({ data }: iAppProps) {
                                                                                 <FileText className="size-4" />
                                                                                 <Link href={`/admin/courses/${data.id}/${item.id}/${lesson.id}`} className="text-base font-normal">{lesson.title}</Link>
                                                                             </div>
-                                                                            <Button size="icon" variant="ghost" className="opacity-80">
-                                                                                <Trash2 className="size-4" />
-                                                                            </Button>
+                                                                            <DeleteLesson chapterId={item.id} lessonId={lesson.id} courseId={data.id} />
                                                                         </div>
                                                                     )}
                                                                 </SortableItem>
@@ -276,7 +293,7 @@ export function CourseStructure({ data }: iAppProps) {
                                                         </SortableContext>
                                                     </DndContext>
                                                     <div className="p-2">
-                                                        <Button variant="outline" className="w-full">Create Lesson</Button>
+                                                        <NewLessonModal chapterId={item.id} courseId={data.id} />
                                                     </div>
                                                 </div>
 
