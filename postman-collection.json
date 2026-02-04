@@ -1,0 +1,867 @@
+{
+	"info": {
+		"_postman_id": "lms-backend-api",
+		"name": "LMS Backend API",
+		"description": "Complete API collection for the Learning Management System. Includes authentication, courses, enrollments, lessons, payments, and admin endpoints.\n\n## Setup\n1. Set the `base_url` variable to your API URL (default: http://localhost:3000)\n2. After logging in, session cookies are automatically stored\n3. Admin endpoints require admin role\n\n## Authentication\nThis API uses Better-Auth with session cookies. Login via `/api/auth/sign-in/email` and the session cookie will be automatically included in subsequent requests.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "API Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": ["{{base_url}}"],
+							"path": [""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Sign Up",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Store session cookie automatically",
+									"pm.test(\"Status is 201 or 200\", function () {",
+									"    pm.expect([200, 201]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"name\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/sign-up/email",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "sign-up", "email"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign In",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Session cookie is automatically stored by Postman",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/sign-in/email",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "sign-in", "email"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign Out",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/sign-out",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "sign-out"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Session",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/get-session",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "get-session"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Courses",
+			"item": [
+				{
+					"name": "Get All Published Courses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "courses"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course by Slug",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:slug",
+							"host": ["{{base_url}}"],
+							"path": ["api", "courses", ":slug"],
+							"variable": [
+								{
+									"key": "slug",
+									"value": "javascript-fundamentals",
+									"description": "Course slug"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course Sidebar (Enrolled)",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:slug/sidebar",
+							"host": ["{{base_url}}"],
+							"path": ["api", "courses", ":slug", "sidebar"],
+							"variable": [
+								{
+									"key": "slug",
+									"value": "javascript-fundamentals"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Enrollments",
+			"item": [
+				{
+					"name": "Get My Enrollments",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/enrollments",
+							"host": ["{{base_url}}"],
+							"path": ["api", "enrollments"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Enrollment Status",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/enrollments/check/:courseId",
+							"host": ["{{base_url}}"],
+							"path": ["api", "enrollments", "check", ":courseId"],
+							"variable": [
+								{
+									"key": "courseId",
+									"value": "{{course_id}}",
+									"description": "Course UUID"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Lessons",
+			"item": [
+				{
+					"name": "Get Lesson Content",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/lessons/:lessonId",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lessons", ":lessonId"],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "{{lesson_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Lesson Complete",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/lessons/:lessonId/complete",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lessons", ":lessonId", "complete"],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "{{lesson_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stripe Payments",
+			"item": [
+				{
+					"name": "Create Checkout Session",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/stripe/checkout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "stripe", "checkout"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Stripe Webhook (Test)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "stripe-signature",
+								"value": "test_signature",
+								"description": "Stripe webhook signature"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"cs_test_123\",\n      \"metadata\": {\n        \"courseId\": \"course-uuid\",\n        \"userId\": \"user-uuid\"\n      },\n      \"amount_total\": 4999\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/webhooks/stripe",
+							"host": ["{{base_url}}"],
+							"path": ["api", "webhooks", "stripe"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "S3 File Management",
+			"item": [
+				{
+					"name": "Generate Upload URL",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fileName\": \"course-thumbnail.jpg\",\n  \"fileType\": \"image/jpeg\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/s3/upload",
+							"host": ["{{base_url}}"],
+							"path": ["api", "s3", "upload"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete File",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fileKey\": \"uploads/course-thumbnail-123.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/s3/delete",
+							"host": ["{{base_url}}"],
+							"path": ["api", "s3", "delete"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin - Dashboard",
+			"item": [
+				{
+					"name": "Verify Admin Access",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/verify",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "verify"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dashboard Stats",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/dashboard/stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "dashboard", "stats"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Enrollment Stats",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/dashboard/enrollment-stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "dashboard", "enrollment-stats"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Recent Courses",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/dashboard/recent-courses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "dashboard", "recent-courses"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin - Courses",
+			"item": [
+				{
+					"name": "Get All Courses (Admin)",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/courses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "courses"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course Details (Admin)",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/courses/:courseId",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "courses", ":courseId"],
+							"variable": [
+								{
+									"key": "courseId",
+									"value": "{{course_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Course",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"JavaScript Fundamentals\",\n  \"description\": \"<p>Learn the basics of JavaScript programming</p>\",\n  \"fileKey\": \"uploads/js-course-thumbnail.jpg\",\n  \"price\": 4999,\n  \"duration\": 20,\n  \"level\": \"Beginner\",\n  \"category\": \"Development\",\n  \"smallDescription\": \"Master JavaScript from scratch with hands-on examples\",\n  \"slug\": \"javascript-fundamentals\",\n  \"status\": \"Draft\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/courses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "courses"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Course",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"JavaScript Fundamentals (Updated)\",\n  \"description\": \"<p>Updated course description</p>\",\n  \"fileKey\": \"uploads/js-course-thumbnail.jpg\",\n  \"price\": 5999,\n  \"duration\": 25,\n  \"level\": \"Beginner\",\n  \"category\": \"Development\",\n  \"smallDescription\": \"Master JavaScript with updated content\",\n  \"slug\": \"javascript-fundamentals\",\n  \"status\": \"Published\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/courses/:courseId",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "courses", ":courseId"],
+							"variable": [
+								{
+									"key": "courseId",
+									"value": "{{course_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Course",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/courses/:courseId",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "courses", ":courseId"],
+							"variable": [
+								{
+									"key": "courseId",
+									"value": "{{course_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin - Chapters",
+			"item": [
+				{
+					"name": "Create Chapter",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Introduction to JavaScript\",\n  \"courseId\": \"{{course_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/chapters",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "chapters"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Chapter",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/chapters/:chapterId",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "chapters", ":chapterId"],
+							"variable": [
+								{
+									"key": "chapterId",
+									"value": "{{chapter_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reorder Chapters",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"chapters\": [\n    {\n      \"id\": \"chapter-uuid-1\",\n      \"position\": 0\n    },\n    {\n      \"id\": \"chapter-uuid-2\",\n      \"position\": 1\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/chapters/reorder",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "chapters", "reorder"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin - Lessons",
+			"item": [
+				{
+					"name": "Get All Lessons (Admin)",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/lessons",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "lessons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lesson (Admin)",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/lessons/:lessonId",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "lessons", ":lessonId"],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "{{lesson_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Lesson",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Variables and Data Types\",\n  \"courseId\": \"{{course_id}}\",\n  \"chapterId\": \"{{chapter_id}}\",\n  \"description\": \"<p>Learn about variables and data types in JavaScript</p>\",\n  \"thumbnailKey\": \"uploads/lesson-thumb.jpg\",\n  \"videoKey\": \"uploads/lesson-video.mp4\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/lessons",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "lessons"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Lesson",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Variables and Data Types (Updated)\",\n  \"description\": \"<p>Updated lesson content</p>\",\n  \"thumbnailKey\": \"uploads/lesson-thumb-new.jpg\",\n  \"videoKey\": \"uploads/lesson-video-new.mp4\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/lessons/:lessonId",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "lessons", ":lessonId"],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "{{lesson_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Lesson",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/lessons/:lessonId",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "lessons", ":lessonId"],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "{{lesson_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reorder Lessons",
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lessons\": [\n    {\n      \"id\": \"lesson-uuid-1\",\n      \"position\": 0\n    },\n    {\n      \"id\": \"lesson-uuid-2\",\n      \"position\": 1\n    },\n    {\n      \"id\": \"lesson-uuid-3\",\n      \"position\": 2\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/lessons/reorder",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "lessons", "reorder"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "inherit"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "course_id",
+			"value": "your-course-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "chapter_id",
+			"value": "your-chapter-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "lesson_id",
+			"value": "your-lesson-uuid-here",
+			"type": "string"
+		}
+	]
+}

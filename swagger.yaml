@@ -1,0 +1,1049 @@
+openapi: 3.0.3
+info:
+  title: LMS Backend API
+  description: |
+    Learning Management System Backend API
+    
+    ## Authentication
+    This API uses session-based authentication with Better-Auth. After logging in via `/api/auth/sign-in/email` or OAuth providers, 
+    the session cookie is automatically included in subsequent requests.
+    
+    ## Authorization Roles
+    - **User**: Regular authenticated users
+    - **Admin**: Users with admin role for course management
+    
+    ## Rate Limiting
+    Most endpoints are protected by Arcjet rate limiting:
+    - Stripe checkout: 5 requests/minute
+    - S3 operations: 20 requests/minute
+    - Auth endpoints: 10 requests/minute
+  version: 1.0.0
+  contact:
+    name: LMS API Support
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://api.yourdomain.com
+    description: Production
+
+tags:
+  - name: Health
+    description: Health check and API info
+  - name: Auth
+    description: Authentication endpoints (Better-Auth)
+  - name: Courses
+    description: Course browsing and details
+  - name: Enrollments
+    description: User course enrollments
+  - name: Lessons
+    description: Lesson content and progress
+  - name: Stripe
+    description: Payment processing
+  - name: S3
+    description: File upload and management
+  - name: Admin - Dashboard
+    description: Admin dashboard statistics
+  - name: Admin - Courses
+    description: Admin course management
+  - name: Admin - Chapters
+    description: Admin chapter management
+  - name: Admin - Lessons
+    description: Admin lesson management
+
+paths:
+  /:
+    get:
+      tags:
+        - Health
+      summary: API information
+      description: Returns API version and available endpoints
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: LMS Backend API
+                  version:
+                    type: string
+                    example: 1.0.0
+                  endpoints:
+                    type: object
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the API is running
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/auth/sign-in/email:
+    post:
+      tags:
+        - Auth
+      summary: Email/password sign in
+      description: Authenticate with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Authentication successful
+        '401':
+          description: Invalid credentials
+
+  /api/auth/sign-up/email:
+    post:
+      tags:
+        - Auth
+      summary: Email registration
+      description: Create a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Validation error or user already exists
+
+  /api/courses:
+    get:
+      tags:
+        - Courses
+      summary: Get all published courses
+      description: Returns list of all published courses (public access)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PublicCourse'
+
+  /api/courses/{slug}:
+    get:
+      tags:
+        - Courses
+      summary: Get course by slug
+      description: Returns detailed course information including chapters and lessons
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: javascript-fundamentals
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/CourseDetail'
+        '404':
+          description: Course not found
+
+  /api/courses/{slug}/sidebar:
+    get:
+      tags:
+        - Courses
+      summary: Get course sidebar data
+      description: Returns course structure with user progress (requires authentication and enrollment)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/CourseSidebar'
+        '401':
+          description: Not authenticated
+        '404':
+          description: Course not found or not enrolled
+
+  /api/enrollments:
+    get:
+      tags:
+        - Enrollments
+      summary: Get user's enrolled courses
+      description: Returns all courses the user is enrolled in
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EnrolledCourse'
+        '401':
+          description: Not authenticated
+
+  /api/enrollments/check/{courseId}:
+    get:
+      tags:
+        - Enrollments
+      summary: Check enrollment status
+      description: Check if user is enrolled in a specific course
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      isEnrolled:
+                        type: boolean
+
+  /api/lessons/{lessonId}:
+    get:
+      tags:
+        - Lessons
+      summary: Get lesson content
+      description: Returns lesson details including video and description
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/LessonContent'
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not enrolled in course
+        '404':
+          description: Lesson not found
+
+  /api/lessons/{lessonId}/complete:
+    post:
+      tags:
+        - Lessons
+      summary: Mark lesson as complete
+      description: Mark a lesson as completed for the current user
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lesson marked as complete
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not enrolled in course
+
+  /api/stripe/checkout:
+    post:
+      tags:
+        - Stripe
+      summary: Create checkout session
+      description: Create a Stripe checkout session for course enrollment (rate limited to 5/min)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - courseId
+              properties:
+                courseId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      checkoutUrl:
+                        type: string
+                        format: uri
+                      alreadyEnrolled:
+                        type: boolean
+        '429':
+          description: Rate limit exceeded
+
+  /api/webhooks/stripe:
+    post:
+      tags:
+        - Stripe
+      summary: Stripe webhook handler
+      description: Handles Stripe webhook events (checkout.session.completed, checkout.session.expired)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook processed successfully
+        '400':
+          description: Webhook signature verification failed
+
+  /api/s3/upload:
+    post:
+      tags:
+        - S3
+      summary: Generate presigned upload URL
+      description: Generate a presigned URL for uploading files to S3 (admin only, rate limited to 20/min)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fileName
+                - fileType
+              properties:
+                fileName:
+                  type: string
+                  example: course-thumbnail.jpg
+                fileType:
+                  type: string
+                  example: image/jpeg
+      responses:
+        '200':
+          description: Presigned URL generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      uploadUrl:
+                        type: string
+                        format: uri
+                      fileKey:
+                        type: string
+        '403':
+          description: Admin access required
+
+  /api/s3/delete:
+    delete:
+      tags:
+        - S3
+      summary: Delete file from S3
+      description: Delete a file from S3 storage (admin only)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fileKey
+              properties:
+                fileKey:
+                  type: string
+      responses:
+        '200':
+          description: File deleted successfully
+        '403':
+          description: Admin access required
+
+  /api/admin/verify:
+    get:
+      tags:
+        - Admin - Dashboard
+      summary: Verify admin access
+      description: Check if user has admin role
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Admin verified
+        '403':
+          description: Not an admin
+
+  /api/admin/dashboard/stats:
+    get:
+      tags:
+        - Admin - Dashboard
+      summary: Get dashboard statistics
+      description: Returns aggregated stats for admin dashboard (cached for 3 minutes)
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/DashboardStats'
+
+  /api/admin/dashboard/enrollment-stats:
+    get:
+      tags:
+        - Admin - Dashboard
+      summary: Get enrollment statistics
+      description: Returns monthly enrollment statistics
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successful response
+
+  /api/admin/dashboard/recent-courses:
+    get:
+      tags:
+        - Admin - Dashboard
+      summary: Get recent courses
+      description: Returns recently created courses
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successful response
+
+  /api/admin/courses:
+    get:
+      tags:
+        - Admin - Courses
+      summary: Get all courses (admin)
+      description: Returns all courses including drafts
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successful response
+    post:
+      tags:
+        - Admin - Courses
+      summary: Create new course
+      description: Create a new course with Stripe price ID
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseInput'
+      responses:
+        '201':
+          description: Course created successfully
+        '400':
+          description: Validation error
+
+  /api/admin/courses/{courseId}:
+    get:
+      tags:
+        - Admin - Courses
+      summary: Get course details (admin)
+      description: Get detailed course information including chapters and lessons
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Course not found
+    put:
+      tags:
+        - Admin - Courses
+      summary: Update course
+      description: Update course details
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseInput'
+      responses:
+        '200':
+          description: Course updated successfully
+    delete:
+      tags:
+        - Admin - Courses
+      summary: Delete course
+      description: Delete a course and all related data
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course deleted successfully
+
+  /api/admin/chapters:
+    post:
+      tags:
+        - Admin - Chapters
+      summary: Create chapter
+      description: Create a new chapter in a course
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - courseId
+              properties:
+                name:
+                  type: string
+                courseId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Chapter created
+
+  /api/admin/chapters/{chapterId}:
+    delete:
+      tags:
+        - Admin - Chapters
+      summary: Delete chapter
+      description: Delete a chapter and all its lessons
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: chapterId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Chapter deleted
+
+  /api/admin/chapters/reorder:
+    put:
+      tags:
+        - Admin - Chapters
+      summary: Reorder chapters
+      description: Update chapter positions
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chapters
+              properties:
+                chapters:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      position:
+                        type: integer
+      responses:
+        '200':
+          description: Chapters reordered
+
+  /api/admin/lessons:
+    get:
+      tags:
+        - Admin - Lessons
+      summary: Get all lessons (admin)
+      description: Returns all lessons across all courses
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successful response
+    post:
+      tags:
+        - Admin - Lessons
+      summary: Create lesson
+      description: Create a new lesson in a chapter
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonInput'
+      responses:
+        '201':
+          description: Lesson created
+
+  /api/admin/lessons/{lessonId}:
+    get:
+      tags:
+        - Admin - Lessons
+      summary: Get lesson (admin)
+      description: Get lesson details for editing
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+    put:
+      tags:
+        - Admin - Lessons
+      summary: Update lesson
+      description: Update lesson details
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonInput'
+      responses:
+        '200':
+          description: Lesson updated
+    delete:
+      tags:
+        - Admin - Lessons
+      summary: Delete lesson
+      description: Delete a lesson
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lesson deleted
+
+  /api/admin/lessons/reorder:
+    put:
+      tags:
+        - Admin - Lessons
+      summary: Reorder lessons
+      description: Update lesson positions within a chapter
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - lessons
+              properties:
+                lessons:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      position:
+                        type: integer
+      responses:
+        '200':
+          description: Lessons reordered
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+      description: Session cookie set by Better-Auth
+
+  schemas:
+    PublicCourse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        slug:
+          type: string
+        smallDescription:
+          type: string
+        fileKey:
+          type: string
+        duration:
+          type: integer
+        level:
+          type: string
+          enum: [BEGINNER, INTERMEDIATE, ADVANCED]
+        category:
+          type: string
+
+    CourseDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        smallDescription:
+          type: string
+        description:
+          type: string
+        fileKey:
+          type: string
+        duration:
+          type: integer
+        level:
+          type: string
+        category:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, ARCHIVED]
+        price:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        chapter:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              title:
+                type: string
+              lessons:
+                type: array
+                items:
+                  type: object
+
+    CourseSidebar:
+      type: object
+      properties:
+        course:
+          type: object
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+            fileKey:
+              type: string
+            duration:
+              type: integer
+            level:
+              type: string
+            category:
+              type: string
+            slug:
+              type: string
+            chapter:
+              type: array
+              items:
+                type: object
+
+    EnrolledCourse:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        fileKey:
+          type: string
+        duration:
+          type: integer
+        level:
+          type: string
+        category:
+          type: string
+        progress:
+          type: number
+          format: float
+
+    LessonContent:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        videoKey:
+          type: string
+        thumbnailKey:
+          type: string
+        completed:
+          type: boolean
+
+    DashboardStats:
+      type: object
+      properties:
+        totalSignups:
+          type: integer
+        totalCustomers:
+          type: integer
+        totalRevenue:
+          type: integer
+        totalLessons:
+          type: integer
+
+    CourseInput:
+      type: object
+      required:
+        - title
+        - description
+        - fileKey
+        - price
+        - duration
+        - level
+        - category
+        - smallDescription
+        - slug
+        - status
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 100
+        description:
+          type: string
+          minLength: 10
+        fileKey:
+          type: string
+        price:
+          type: integer
+          minimum: 1
+        duration:
+          type: integer
+          minimum: 1
+          maximum: 500
+        level:
+          type: string
+          enum: [Beginner, Intermediate, Advanced]
+        category:
+          type: string
+          enum: [Development, Business, Finance, IT & Software, Office Productivity, Personal Development, Design, Marketing, Lifestyle, Photography, Health & Fitness, Music, Teaching & Academics]
+        smallDescription:
+          type: string
+          minLength: 10
+          maxLength: 200
+        slug:
+          type: string
+          minLength: 3
+        status:
+          type: string
+          enum: [Draft, Published, Archived]
+
+    LessonInput:
+      type: object
+      required:
+        - name
+        - courseId
+        - chapterId
+      properties:
+        name:
+          type: string
+          minLength: 3
+        courseId:
+          type: string
+          format: uuid
+        chapterId:
+          type: string
+          format: uuid
+        description:
+          type: string
+          minLength: 3
+        thumbnailKey:
+          type: string
+        videoKey:
+          type: string
