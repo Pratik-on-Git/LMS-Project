@@ -1,4 +1,4 @@
-import { lessonApi, LessonContentType } from "@/lib/api";
+import { lessonApi } from "@/lib/api";
 import { CourseContent } from "./_components/CourseContent";
 import { Suspense } from "react";
 import { LessonSkeleton } from "./_components/LessonSkeleton";
